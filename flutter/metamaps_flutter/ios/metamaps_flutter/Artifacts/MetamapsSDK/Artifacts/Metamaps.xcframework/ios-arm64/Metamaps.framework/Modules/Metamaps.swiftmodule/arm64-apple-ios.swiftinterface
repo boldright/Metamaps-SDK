@@ -1,0 +1,188 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)
+// swift-module-flags: -target arm64-apple-ios16.0 -enable-objc-interop -enable-library-evolution -language-mode 6 -O -enable-experimental-feature DebugDescriptionMacro -module-name Metamaps -package-name metamaps
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.4
+import Foundation
+@_exported import MetamapsPositioning
+import MetamapsPositioningCore
+import SafariServices
+import Swift
+import UIKit
+import WebKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum MapViewPositioningPolicy : Swift::String, Swift::Codable, Swift::Sendable {
+  case userInitiated
+  case hostControlled
+  case disabled
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public enum MapViewPositioningStartTrigger : Swift::String, Swift::Codable, Swift::CaseIterable, Swift::Sendable {
+  case userAction
+  case automatic
+  case automaticWhenAuthorized
+  public init?(rawValue: Swift::String)
+  public typealias AllCases = [Metamaps::MapViewPositioningStartTrigger]
+  public typealias RawValue = Swift::String
+  nonisolated public static var allCases: [Metamaps::MapViewPositioningStartTrigger] {
+    get
+  }
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public enum MetamapsMapViewRetryPolicy : Swift::String, Swift::Codable, Swift::Sendable {
+  case automatic
+  case disabled
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public enum MetamapsExternalLinkDecision : Swift::Equatable, Swift::Sendable {
+  case openDefault
+  case handled
+  public static func == (a: Metamaps::MetamapsExternalLinkDecision, b: Metamaps::MetamapsExternalLinkDecision) -> Swift::Bool
+  public func hash(into hasher: inout Swift::Hasher)
+  public var hashValue: Swift::Int {
+    get
+  }
+}
+public struct MetamapsMapViewConfiguration : Swift::Sendable {
+  public let mapSlug: Swift::String
+  public let baseURL: Foundation::URL
+  public let groupId: Foundation::UUID?
+  public let language: Swift::String?
+  public let initialFloorId: Foundation::UUID?
+  public let previewToken: Swift::String?
+  public let positioningPolicy: Metamaps::MapViewPositioningPolicy
+  public let positioningStartTrigger: Metamaps::MapViewPositioningStartTrigger
+  public let showsBeaconDiagnostics: Swift::Bool
+  public let additionalQuery: [Swift::String : Swift::String]
+  public let retryPolicy: Metamaps::MetamapsMapViewRetryPolicy
+  public let userAgentAppendix: Swift::String?
+  public let isWebViewInspectable: Swift::Bool
+  public init(mapSlug: Swift::String, baseURL: Foundation::URL = MetamapsSDK.productionBaseURL, groupId: Foundation::UUID? = nil, language: Swift::String? = nil, initialFloorId: Foundation::UUID? = nil, previewToken: Swift::String? = nil, positioningPolicy: Metamaps::MapViewPositioningPolicy = .userInitiated, positioningStartTrigger: Metamaps::MapViewPositioningStartTrigger = .automaticWhenAuthorized, showsBeaconDiagnostics: Swift::Bool = false, additionalQuery: [Swift::String : Swift::String] = [:], retryPolicy: Metamaps::MetamapsMapViewRetryPolicy = .automatic, userAgentAppendix: Swift::String? = nil, isWebViewInspectable: Swift::Bool = false)
+}
+public enum MapViewLoadState : Swift::String, Swift::Codable, Swift::Sendable {
+  case idle, loading, loaded, failed, disposed
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public struct MapReadyEvent : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let mapId: Foundation::UUID
+  public let groupId: Foundation::UUID
+  public let configRevision: Swift::String?
+  public let manifestRevision: Swift::Int?
+  public static func == (a: Metamaps::MapReadyEvent, b: Metamaps::MapReadyEvent) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct FloorChangedEvent : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let floorId: Foundation::UUID?
+  public let source: Swift::String?
+  public static func == (a: Metamaps::FloorChangedEvent, b: Metamaps::FloorChangedEvent) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct MapCenterReticleCandidate : Swift::Equatable, Swift::Sendable {
+  public let floorId: Foundation::UUID
+  public let longitude: Swift::Double
+  public let latitude: Swift::Double
+  public let local: MetamapsPositioningCore::LocalPosition?
+  public init(floorId: Foundation::UUID, longitude: Swift::Double, latitude: Swift::Double, local: MetamapsPositioningCore::LocalPosition?)
+  public static func == (a: Metamaps::MapCenterReticleCandidate, b: Metamaps::MapCenterReticleCandidate) -> Swift::Bool
+}
+public struct SpotSelectedEvent : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let spotId: Swift::String?
+  public static func == (a: Metamaps::SpotSelectedEvent, b: Metamaps::SpotSelectedEvent) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct RouteChangedEvent : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let destinationSpotId: Swift::String?
+  public let active: Swift::Bool
+  public static func == (a: Metamaps::RouteChangedEvent, b: Metamaps::RouteChangedEvent) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public enum MetamapsMapViewEvent : Swift::Sendable {
+  case ready(Metamaps::MapReadyEvent)
+  case loadState(Metamaps::MapViewLoadState)
+  case positioningStatus(MetamapsPositioning::PositioningLifecycleStatus)
+  case capabilities(MetamapsPositioning::CapabilityReport)
+  case motionHeading(MetamapsPositioning::MotionHeadingReading)
+  case position(MetamapsPositioning::PositioningUpdate)
+  case beaconSignals([MetamapsPositioning::BeaconSignalReading])
+  case positioningAuthorizationRequested
+  case positioningStartRequested
+  case floorChanged(Metamaps::FloorChangedEvent)
+  case spotSelected(Metamaps::SpotSelectedEvent)
+  case routeChanged(Metamaps::RouteChangedEvent)
+  case externalLinkRequested(Foundation::URL)
+  case error(MetamapsPositioning::MetamapsError)
+}
+@_Concurrency::MainActor public protocol MetamapsMapViewDelegate : AnyObject {
+  @_Concurrency::MainActor func metamapsMapView(_ mapView: Metamaps::MetamapsMapView, didReceive event: Metamaps::MetamapsMapViewEvent)
+  @_Concurrency::MainActor func metamapsMapView(_ mapView: Metamaps::MetamapsMapView, decideExternalLink url: Foundation::URL) -> Metamaps::MetamapsExternalLinkDecision
+}
+extension Metamaps::MetamapsMapViewDelegate {
+  @_Concurrency::MainActor public func metamapsMapView(_ mapView: Metamaps::MetamapsMapView, decideExternalLink url: Foundation::URL) -> Metamaps::MetamapsExternalLinkDecision
+}
+@objc @_hasMissingDesignatedInitializers @_Concurrency::MainActor final public class MetamapsMapView : UIKit::UIView {
+  @_Concurrency::MainActor weak final public var delegate: (any Metamaps::MetamapsMapViewDelegate)?
+  nonisolated final public let events: _Concurrency::AsyncStream<Metamaps::MetamapsMapViewEvent>
+  @_Concurrency::MainActor final public var loadState: Metamaps::MapViewLoadState {
+    get
+  }
+  @_Concurrency::MainActor final public let webView: WebKit::WKWebView
+  @_Concurrency::MainActor public init(configuration: Metamaps::MetamapsMapViewConfiguration)
+  @_Concurrency::MainActor final public func load() async throws
+  @_Concurrency::MainActor final public func reload() async throws
+  @_Concurrency::MainActor final public func startPositioning(requestAuthorization: Swift::Bool = true) async throws
+  @_Concurrency::MainActor final public func requestPositioningAuthorization() async throws
+  @_Concurrency::MainActor final public func stopPositioning()
+  @_Concurrency::MainActor final public func openExternalLink(_ url: Foundation::URL)
+  @_Concurrency::MainActor final public func resetPedestrianRoute() throws
+  @_Concurrency::MainActor final public func selectFloor(_ floorId: Foundation::UUID?) throws
+  @_Concurrency::MainActor final public func showSpot(_ spotId: Swift::String) throws
+  @_Concurrency::MainActor final public func setDestination(_ spotId: Swift::String?) throws
+  @_Concurrency::MainActor final public func setLanguage(_ language: Swift::String) throws
+  @_Concurrency::MainActor final public func setCenterReticleEnabled(_ enabled: Swift::Bool) throws
+  @_Concurrency::MainActor final public func requestCenterReticleCandidate() async throws -> Metamaps::MapCenterReticleCandidate?
+  @_Concurrency::MainActor final public func dispose()
+  @objc deinit
+}
+extension Metamaps::MetamapsMapView : WebKit::WKNavigationDelegate, WebKit::WKUIDelegate {
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, requestMediaCapturePermissionFor origin: WebKit::WKSecurityOrigin, initiatedByFrame frame: WebKit::WKFrameInfo, type: WebKit::WKMediaCaptureType, decisionHandler: @escaping @_Concurrency::MainActor @Sendable (WebKit::WKPermissionDecision) -> Swift::Void)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didStartProvisionalNavigation navigation: WebKit::WKNavigation!)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didFinish navigation: WebKit::WKNavigation!)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didFail navigation: WebKit::WKNavigation!, withError error: any Swift::Error)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didFailProvisionalNavigation navigation: WebKit::WKNavigation!, withError error: any Swift::Error)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, decidePolicyFor navigationResponse: WebKit::WKNavigationResponse, decisionHandler: @escaping @_Concurrency::MainActor @Sendable (WebKit::WKNavigationResponsePolicy) -> Swift::Void)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, decidePolicyFor navigationAction: WebKit::WKNavigationAction, decisionHandler: @escaping @_Concurrency::MainActor @Sendable (WebKit::WKNavigationActionPolicy) -> Swift::Void)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, createWebViewWith configuration: WebKit::WKWebViewConfiguration, for navigationAction: WebKit::WKNavigationAction, windowFeatures: WebKit::WKWindowFeatures) -> WebKit::WKWebView?
+  @_Concurrency::MainActor @preconcurrency @objc final public func webViewWebContentProcessDidTerminate(_ webView: WebKit::WKWebView)
+}
+extension Metamaps::MapViewPositioningPolicy : Swift::Equatable {}
+extension Metamaps::MapViewPositioningPolicy : Swift::Hashable {}
+extension Metamaps::MapViewPositioningPolicy : Swift::RawRepresentable {}
+extension Metamaps::MapViewPositioningStartTrigger : Swift::Equatable {}
+extension Metamaps::MapViewPositioningStartTrigger : Swift::Hashable {}
+extension Metamaps::MapViewPositioningStartTrigger : Swift::RawRepresentable {}
+extension Metamaps::MetamapsMapViewRetryPolicy : Swift::Equatable {}
+extension Metamaps::MetamapsMapViewRetryPolicy : Swift::Hashable {}
+extension Metamaps::MetamapsMapViewRetryPolicy : Swift::RawRepresentable {}
+extension Metamaps::MetamapsExternalLinkDecision : Swift::Hashable {}
+extension Metamaps::MapViewLoadState : Swift::Equatable {}
+extension Metamaps::MapViewLoadState : Swift::Hashable {}
+extension Metamaps::MapViewLoadState : Swift::RawRepresentable {}

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Indoor positioning is optional, so the library does not merge location, Bluetooth, or activity recognition
+      permissions into every app that shows a map. Apps that use positioning declare them in their own manifest
+      (an app's declarations take priority over these removals). Remove the ones the Android Beacon Library would
+      otherwise merge in.
+    -->
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_ADMIN"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.FOREGROUND_SERVICE_LOCATION"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.RECEIVE_BOOT_COMPLETED"
+        tools:node="remove" />
+
+    <application>
+        <service
+            android:name="org.altbeacon.beacon.service.BeaconService"
+            tools:remove="android:foregroundServiceType" />
+        <receiver
+            android:name="org.altbeacon.beacon.startup.StartupBroadcastReceiver"
+            tools:node="remove" />
+        <service
+            android:name="org.altbeacon.beacon.BeaconIntentProcessor"
+            tools:node="remove" />
+        <!--
+          ScanJob must NOT be removed: even with setEnableScheduledScanJobs(false)
+          (foreground scanning), android-beacon-library 2.21.2 reads the ScanJob
+          immediateScanJobId/periodicScanJobId from the manifest when applying scan
+          settings and cancelling any scheduled job. Removing the service makes both
+          the survey (Calibrator) and core positioning paths throw
+          "Cannot get job id from manifest" on start. Let the library's own
+          declaration (with default job ids) merge in.
+        -->
+        <service
+            android:name="org.altbeacon.bluetooth.BluetoothTestJob"
+            tools:node="remove" />
+    </application>
+</manifest>

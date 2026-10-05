@@ -1,0 +1,291 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)
+// swift-module-flags: -target arm64-apple-ios16.0 -enable-objc-interop -enable-library-evolution -language-mode 6 -O -enable-experimental-feature DebugDescriptionMacro -module-name MetamapsPositioning -package-name positioning
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.4
+import CoreLocation
+import CoreMotion
+import Foundation
+import MetamapsPositioningCore
+import Swift
+import UIKit
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum MotionPolicy : Swift::String, Swift::Codable, Swift::Sendable {
+  case preferred
+  case disabled
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public enum PositioningAuthorizationMode : Swift::String, Swift::Codable, Swift::Sendable {
+  case foregroundNavigation
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public struct PositioningConfiguration : Swift::Sendable {
+  public static let productionBaseURL: Foundation::URL
+  public let baseURL: Foundation::URL
+  public let mapSlug: Swift::String
+  public let groupId: Foundation::UUID?
+  public let beaconDiagnosticsEnabled: Swift::Bool
+  public let maxOfflineAge: Foundation::TimeInterval
+  public let motionPolicy: MetamapsPositioning::MotionPolicy
+  public init(baseURL: Foundation::URL = Self.productionBaseURL, mapSlug: Swift::String, groupId: Foundation::UUID? = nil, beaconDiagnosticsEnabled: Swift::Bool = false, maxOfflineAge: Foundation::TimeInterval = 7 * 24 * 60 * 60, motionPolicy: MetamapsPositioning::MotionPolicy = .preferred)
+  public func validate() throws
+}
+public enum PositioningLifecycleStatus : Swift::String, Swift::Codable, Swift::Sendable {
+  case unconfigured
+  case configured
+  case authorized
+  case acquiring
+  case tracking
+  case degraded
+  case coasting
+  case recovering
+  case lost
+  case pausedBackground
+  case stopped
+  case disposed
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public enum LocationAuthorizationState : Swift::String, Swift::Codable, Swift::Sendable {
+  case notDetermined, denied, restricted, whenInUse, always
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public enum MotionAuthorizationState : Swift::String, Swift::Codable, Swift::Sendable {
+  case notDetermined, denied, granted, unavailable
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public struct CapabilityReport : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public struct Ble : Swift::Codable, Swift::Equatable, Swift::Sendable {
+    public let supported: Swift::Bool
+    public let enabled: Swift::Bool
+    public let rangingAvailable: Swift::Bool
+    public let foregroundScan: Swift::Bool
+    public let backgroundScan: Swift::String
+    public let directionFinding: Swift::String
+    public let channelSounding: Swift::String
+    public static func == (a: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Ble, b: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Ble) -> Swift::Bool
+    public func encode(to encoder: any Swift::Encoder) throws
+    public init(from decoder: any Swift::Decoder) throws
+  }
+  public struct Authorization : Swift::Codable, Swift::Equatable, Swift::Sendable {
+    public let location: MetamapsPositioning::LocationAuthorizationState
+    public let preciseLocation: Swift::Bool
+    public let bluetoothScan: Swift::String
+    public let motion: MetamapsPositioning::MotionAuthorizationState
+    public static func == (a: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Authorization, b: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Authorization) -> Swift::Bool
+    public func encode(to encoder: any Swift::Encoder) throws
+    public init(from decoder: any Swift::Decoder) throws
+  }
+  public struct Sensors : Swift::Codable, Swift::Equatable, Swift::Sendable {
+    public let stepDetector: Swift::Bool
+    public let rotationVector: Swift::Bool
+    public let gyroscope: Swift::Bool
+    public let magnetometer: Swift::Bool
+    public let barometer: Swift::Bool
+    public static func == (a: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Sensors, b: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Sensors) -> Swift::Bool
+    public func encode(to encoder: any Swift::Encoder) throws
+    public init(from decoder: any Swift::Decoder) throws
+  }
+  public let platform: Swift::String
+  public let osVersion: Swift::String
+  public let sdkVersion: Swift::String
+  public let ble: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Ble
+  public let authorization: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Authorization
+  public let sensors: MetamapsPositioning::CapabilityReport.MetamapsPositioning::Sensors
+  public let selectedProfile: Swift::String
+  public static func == (a: MetamapsPositioning::CapabilityReport, b: MetamapsPositioning::CapabilityReport) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct ManifestIdentity : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let mapId: Foundation::UUID
+  public let groupId: Foundation::UUID
+  public let revision: Swift::Int
+  public init(mapId: Foundation::UUID, groupId: Foundation::UUID, revision: Swift::Int)
+  public static func == (a: MetamapsPositioning::ManifestIdentity, b: MetamapsPositioning::ManifestIdentity) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningUpdate : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let mapId: Foundation::UUID
+  public let groupId: Foundation::UUID
+  public let estimate: MetamapsPositioningCore::PositionEstimate
+  public let wgs84: MetamapsPositioningCore::Wgs84Position?
+  public init(mapId: Foundation::UUID, groupId: Foundation::UUID, estimate: MetamapsPositioningCore::PositionEstimate, wgs84: MetamapsPositioningCore::Wgs84Position?)
+  public static func == (a: MetamapsPositioning::PositioningUpdate, b: MetamapsPositioning::PositioningUpdate) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct MotionHeadingReading : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let localHeadingDeg: Swift::Double?
+  public let magneticFieldAccuracy: Swift::String?
+  public init(localHeadingDeg: Swift::Double?, magneticFieldAccuracy: Swift::String?)
+  public static func == (a: MetamapsPositioning::MotionHeadingReading, b: MetamapsPositioning::MotionHeadingReading) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct BeaconSignalReading : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let beaconId: Foundation::UUID
+  public let uuid: Swift::String
+  public let major: Swift::Int
+  public let minor: Swift::Int
+  public let floorId: Foundation::UUID
+  public let rssiDbm: Swift::Double
+  public let smoothedRssiDbm: Swift::Double
+  public let radioDistanceM: Swift::Double
+  public let configuredPosition: MetamapsPositioningCore::LocalPosition
+  public let configuredWgs84: MetamapsPositioningCore::Wgs84Position
+  public let devicePosition: MetamapsPositioningCore::LocalPosition?
+  public let deviceWgs84: MetamapsPositioningCore::Wgs84Position?
+  public let configuredDistanceM: Swift::Double?
+  public let distanceDeltaM: Swift::Double?
+  public let monotonicTimestampMs: Swift::Int64
+  public init(beaconId: Foundation::UUID, uuid: Swift::String, major: Swift::Int, minor: Swift::Int, floorId: Foundation::UUID, rssiDbm: Swift::Double, smoothedRssiDbm: Swift::Double, radioDistanceM: Swift::Double, configuredPosition: MetamapsPositioningCore::LocalPosition, configuredWgs84: MetamapsPositioningCore::Wgs84Position, devicePosition: MetamapsPositioningCore::LocalPosition?, deviceWgs84: MetamapsPositioningCore::Wgs84Position?, configuredDistanceM: Swift::Double?, distanceDeltaM: Swift::Double?, monotonicTimestampMs: Swift::Int64)
+  public static func == (a: MetamapsPositioning::BeaconSignalReading, b: MetamapsPositioning::BeaconSignalReading) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public enum MetamapsUserAction : Swift::String, Swift::Codable, Swift::Sendable {
+  case none
+  case checkConfiguration
+  case retry
+  case requestPermission
+  case enableBluetooth
+  case enablePreciseLocation
+  case openAppSettings
+  case selectLocationManually
+  public init?(rawValue: Swift::String)
+  public typealias RawValue = Swift::String
+  public var rawValue: Swift::String {
+    get
+  }
+}
+public struct MetamapsError : Swift::Error, Foundation::LocalizedError, Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public enum Code : Swift::String, Swift::Codable, Swift::Sendable {
+    case configurationInvalid
+    case mapNotFound
+    case mapAccessDenied
+    case webContentLoadFailed
+    case mapOperationFailed
+    case bridgeHandshakeFailed
+    case bridgeUnsupported
+    case bridgeMapMismatch
+    case manifestUnavailable
+    case manifestExpired
+    case manifestUnsupported
+    case locationPermissionDenied
+    case preciseLocationRequired
+    case bluetoothPermissionDenied
+    case bluetoothDisabled
+    case bleUnsupported
+    case motionPermissionDenied
+    case scanStartFailed
+    case scanRuntimeFailed
+    case noRegisteredBeacons
+    case insufficientSignals
+    case pausedBackground
+    case positionLost
+    case backgroundModeUnavailable
+    case backgroundStartNotAllowed
+    case backgroundInterrupted
+    case internalInvariantViolation
+    public init?(rawValue: Swift::String)
+    public typealias RawValue = Swift::String
+    public var rawValue: Swift::String {
+      get
+    }
+  }
+  public let code: MetamapsPositioning::MetamapsError.MetamapsPositioning::Code
+  public let message: Swift::String
+  public let recoverable: Swift::Bool
+  public let userAction: MetamapsPositioning::MetamapsUserAction
+  public let debugDetail: Swift::String?
+  public init(code: MetamapsPositioning::MetamapsError.MetamapsPositioning::Code, message: Swift::String, recoverable: Swift::Bool, userAction: MetamapsPositioning::MetamapsUserAction, debugDetail: Swift::String? = nil)
+  public static func configurationInvalid(_ detail: Swift::String) -> MetamapsPositioning::MetamapsError
+  public var errorDescription: Swift::String? {
+    get
+  }
+  public static func == (a: MetamapsPositioning::MetamapsError, b: MetamapsPositioning::MetamapsError) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public enum MetamapsPositioningEvent : Swift::Sendable {
+  case position(MetamapsPositioning::PositioningUpdate)
+  case beaconSignals([MetamapsPositioning::BeaconSignalReading])
+  case motionHeading(MetamapsPositioning::MotionHeadingReading)
+  case status(MetamapsPositioning::PositioningLifecycleStatus)
+  case capabilities(MetamapsPositioning::CapabilityReport)
+  case error(MetamapsPositioning::MetamapsError)
+}
+public enum MetamapsSDK {
+  public static let version: Swift::String
+  public static let productionBaseURL: Foundation::URL
+}
+@_hasMissingDesignatedInitializers @_Concurrency::MainActor final public class MetamapsPositioningClient {
+  nonisolated final public let events: _Concurrency::AsyncStream<MetamapsPositioning::MetamapsPositioningEvent>
+  @_Concurrency::MainActor final public var status: MetamapsPositioning::PositioningLifecycleStatus {
+    get
+  }
+  @_Concurrency::MainActor final public var manifestIdentity: MetamapsPositioning::ManifestIdentity? {
+    get
+  }
+  @_Concurrency::MainActor final public var latestUpdate: MetamapsPositioning::PositioningUpdate? {
+    get
+  }
+  @_Concurrency::MainActor final public var hasObservedRegisteredBeaconSinceStart: Swift::Bool {
+    get
+  }
+  @_Concurrency::MainActor convenience public init(configuration: MetamapsPositioning::PositioningConfiguration)
+  @_Concurrency::MainActor final public func configure() async throws
+  @_Concurrency::MainActor final public func capabilities() -> MetamapsPositioning::CapabilityReport
+  @_Concurrency::MainActor final public func requestAuthorization(_ mode: MetamapsPositioning::PositioningAuthorizationMode = .foregroundNavigation) async throws
+  @_Concurrency::MainActor final public func start() async throws
+  @_Concurrency::MainActor final public func stop()
+  @_Concurrency::MainActor final public func reset() throws
+  @_Concurrency::MainActor final public func resetPedestrianRoute() throws
+  @_Concurrency::MainActor final public func manifestLocalPosition(longitude: Swift::Double, latitude: Swift::Double, floorId: Foundation::UUID) throws -> MetamapsPositioningCore::LocalPosition?
+  @_Concurrency::MainActor final public func dispose()
+  @objc deinit
+}
+extension MetamapsPositioning::MotionPolicy : Swift::Equatable {}
+extension MetamapsPositioning::MotionPolicy : Swift::Hashable {}
+extension MetamapsPositioning::MotionPolicy : Swift::RawRepresentable {}
+extension MetamapsPositioning::PositioningAuthorizationMode : Swift::Equatable {}
+extension MetamapsPositioning::PositioningAuthorizationMode : Swift::Hashable {}
+extension MetamapsPositioning::PositioningAuthorizationMode : Swift::RawRepresentable {}
+extension MetamapsPositioning::PositioningLifecycleStatus : Swift::Equatable {}
+extension MetamapsPositioning::PositioningLifecycleStatus : Swift::Hashable {}
+extension MetamapsPositioning::PositioningLifecycleStatus : Swift::RawRepresentable {}
+extension MetamapsPositioning::LocationAuthorizationState : Swift::Equatable {}
+extension MetamapsPositioning::LocationAuthorizationState : Swift::Hashable {}
+extension MetamapsPositioning::LocationAuthorizationState : Swift::RawRepresentable {}
+extension MetamapsPositioning::MotionAuthorizationState : Swift::Equatable {}
+extension MetamapsPositioning::MotionAuthorizationState : Swift::Hashable {}
+extension MetamapsPositioning::MotionAuthorizationState : Swift::RawRepresentable {}
+extension MetamapsPositioning::MetamapsUserAction : Swift::Equatable {}
+extension MetamapsPositioning::MetamapsUserAction : Swift::Hashable {}
+extension MetamapsPositioning::MetamapsUserAction : Swift::RawRepresentable {}
+extension MetamapsPositioning::MetamapsError.MetamapsPositioning::Code : Swift::Equatable {}
+extension MetamapsPositioning::MetamapsError.MetamapsPositioning::Code : Swift::Hashable {}
+extension MetamapsPositioning::MetamapsError.MetamapsPositioning::Code : Swift::RawRepresentable {}
+extension MetamapsPositioning::MetamapsPositioningClient : Swift::Sendable {}

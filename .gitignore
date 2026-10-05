@@ -1,5 +1,5 @@
 # Build and IDE outputs. The prebuilt engine binaries (ios/Artifacts/, android/maven-repository/, and the copies
-# bundled in flutter/metamap_positioning/) are part of this repository; do not ignore them.
+# bundled in flutter/metamaps_flutter/) are part of this repository; do not ignore them.
 .DS_Store
 .build/
 .swiftpm/
