@@ -9,16 +9,8 @@ or later.
 Place the SDK package in a fixed directory inside your app repository, for example `Vendor/metamaps-ios`. The
 directory must keep `Package.swift` and `Artifacts/` side by side.
 
-From a release ZIP (`MetamapsSDK-iOS-<version>.zip`):
-
-```bash
-mkdir -p Vendor
-unzip MetamapsSDK-iOS-*.zip -d Vendor
-mv Vendor/MetamapsSDK-iOS-* Vendor/metamaps-ios
-```
-
-From the [public repository](https://github.com/boldright/Metamaps-SDK), copy its `ios/` directory instead
-(run from your app repository):
+Clone the [public repository](https://github.com/boldright/Metamaps-SDK) and copy its `ios/` directory (run from
+your app repository):
 
 ```bash
 git clone https://github.com/boldright/Metamaps-SDK.git ../Metamaps-SDK
@@ -256,25 +248,27 @@ xcodebuild \
 
 ## 10. Update the SDK
 
-Replace the whole `Vendor/metamaps-ios/` directory with the new version. Do not change Xcode's package reference,
-`Info.plist`, or your code.
+Check out the new version in your clone of the public repository and replace the whole `Vendor/metamaps-ios/`
+directory. Do not change Xcode's package reference, `Info.plist`, or your code.
 
 ```bash
+git -C ../Metamaps-SDK fetch --tags
+git -C ../Metamaps-SDK checkout v<version>
 rm -rf Vendor/metamaps-ios
-unzip MetamapsSDK-iOS-*.zip -d Vendor
-mv Vendor/MetamapsSDK-iOS-* Vendor/metamaps-ios
+cp -R ../Metamaps-SDK/ios Vendor/metamaps-ios
 ```
 
-**Do not skip `rm -rf`.** If `Vendor/metamaps-ios` still exists, `mv` moves the new directory **into** it. Xcode
-then keeps reading the old `Vendor/metamaps-ios/Package.swift` and `Artifacts/`, and the build succeeds with the
-old SDK without any error or warning.
+Replace `<version>` with the version to install, for example `0.6.0`.
+
+**Do not skip `rm -rf`.** If `Vendor/metamaps-ios` still exists, `cp -R` copies the new directory **into** it.
+Xcode then keeps reading the old `Vendor/metamaps-ios/Package.swift` and `Artifacts/`, and the build succeeds with
+the old SDK without any error or warning.
 
 After replacing the package, choose `Product > Clean Build Folder` in Xcode and build again. The local package
 resolves by the fixed directory name from step 1, so you do not need to re-add the package. If Xcode keeps
 showing old content, choose `File > Packages > Reset Package Caches`.
 
-A release ZIP records its version in `Vendor/metamaps-ios/VERSION`. At run time, read
-`MetamapsSDK.version`:
+To check the installed version, read `MetamapsSDK.version` at run time:
 
 ```swift
 import Metamaps

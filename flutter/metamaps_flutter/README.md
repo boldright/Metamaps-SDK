@@ -21,8 +21,7 @@ The [Flutter developer guide](../../docs/flutter-installation.md) covers every s
 A Flutter plugin's Dart code is compiled together with your app, so the plugin ships as source: the Dart API, the
 native bridge, the iOS XCFrameworks, and a local Android Maven repository, all in one directory.
 
-1. Copy this directory (or unzip `MetamapsSDK-Flutter-<version>.zip`) into your app repository, for example as
-   `vendor/metamaps-flutter`.
+1. Copy this directory into your app repository, for example as `vendor/metamaps-flutter`.
 2. Reference it from your app's `pubspec.yaml`:
 
 ```yaml

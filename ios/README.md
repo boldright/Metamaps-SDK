@@ -19,8 +19,7 @@ and `Artifacts/` side by side. The SDK contains no client secret.
 
 ## Installation
 
-1. Copy this directory (or unzip `MetamapsSDK-iOS-<version>.zip`) into your app repository, for example as
-   `Vendor/metamaps-ios`.
+1. Copy this directory into your app repository, for example as `Vendor/metamaps-ios`.
 2. In Xcode, choose `File > Add Package Dependencies... > Add Local...` and select that directory.
 3. Add the `Metamaps` product to your app target. For positioning without the map view, add
    `MetamapsPositioning` instead.

@@ -1,7 +1,7 @@
 val exampleAndroidProjectDirectory = projectDir
 
 // A host app must register the repository that holds the plugin's Android libraries. Use the libraries
-// bundled in the plugin (the public repository and release ZIPs), or the SDK built from source with
+// bundled in the plugin (as in the public repository), or the SDK built from source with
 // `./gradlew publishSdkToBuildRepository` in `android/`.
 val metamapsSdkRepository = listOf(
     "../../android/maven-repository",

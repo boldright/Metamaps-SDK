@@ -25,8 +25,9 @@ The SDK contains no client secret.
 ## Installation
 
 1. Publish the SDK into a local Maven repository (`./gradlew publishSdkToBuildRepository` writes it to
-   `build/maven-repository`), or unzip `MetamapsSDK-Android-<version>.zip`, and copy the repository into your app,
-   for example as `vendor/metamaps-android/maven-repository`.
+   `build/maven-repository`) and copy the repository into your app, for example as
+   `vendor/metamaps-android/maven-repository`. Record the SDK version (the `version` in `build.gradle.kts`) in
+   `vendor/metamaps-android/VERSION`; the developer guide has the commands.
 2. Add the repository to `settings.gradle.kts`:
 
 ```kotlin

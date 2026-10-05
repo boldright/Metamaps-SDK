@@ -10,16 +10,8 @@ basic calls an app makes. Indoor positioning is optional; step 9 covers it. The 
 Place the SDK in a fixed directory inside your app repository, for example `vendor/metamaps-android`. The rest of
 this guide reads `vendor/metamaps-android/maven-repository` and `vendor/metamaps-android/VERSION`.
 
-From a release ZIP (`MetamapsSDK-Android-<version>.zip`):
-
-```bash
-mkdir -p vendor
-unzip MetamapsSDK-Android-*.zip -d vendor
-mv vendor/MetamapsSDK-Android-* vendor/metamaps-android
-```
-
-From the [public repository](https://github.com/boldright/Metamaps-SDK), publish the SDK into a local Maven
-repository first, then copy it and record its version (run from your app repository):
+Clone the [public repository](https://github.com/boldright/Metamaps-SDK), publish the SDK into a local Maven
+repository, then copy it and record its version (run from your app repository):
 
 ```bash
 git clone https://github.com/boldright/Metamaps-SDK.git ../Metamaps-SDK
@@ -321,19 +313,21 @@ The APK is usually written to `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## 11. Update the SDK
 
-Replace the whole `vendor/metamaps-android/` directory with the new version. Do not change
-`settings.gradle.kts`, `build.gradle.kts`, `lint.xml`, `AndroidManifest.xml`, or your code; the dependency version
-comes from `VERSION`.
+Check out the new version in your clone of the public repository, publish it, and replace the whole
+`vendor/metamaps-android/` directory. Do not change `settings.gradle.kts`, `build.gradle.kts`, `lint.xml`,
+`AndroidManifest.xml`, or your code; the dependency version comes from `VERSION`.
 
 ```bash
+git -C ../Metamaps-SDK fetch --tags
+git -C ../Metamaps-SDK checkout v<version>
+(cd ../Metamaps-SDK/android && ./gradlew publishSdkToBuildRepository)
 rm -rf vendor/metamaps-android
-unzip MetamapsSDK-Android-*.zip -d vendor
-mv vendor/MetamapsSDK-Android-* vendor/metamaps-android
+mkdir -p vendor/metamaps-android
+cp -R ../Metamaps-SDK/android/build/maven-repository vendor/metamaps-android/
+sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > vendor/metamaps-android/VERSION
 ```
 
-**Do not skip `rm -rf`.** If `vendor/metamaps-android` still exists, `mv` moves the new directory **into** it.
-Gradle then keeps reading the old `vendor/metamaps-android/maven-repository` and `VERSION`, and the build succeeds
-with the old SDK without any error or warning.
+Replace `<version>` with the version to install, for example `0.6.0`.
 
 Build as usual after replacing the directory:
 

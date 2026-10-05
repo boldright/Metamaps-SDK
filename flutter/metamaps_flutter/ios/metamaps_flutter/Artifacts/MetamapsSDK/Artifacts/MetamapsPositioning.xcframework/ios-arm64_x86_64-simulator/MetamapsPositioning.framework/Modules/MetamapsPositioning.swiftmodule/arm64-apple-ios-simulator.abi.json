@@ -11287,329 +11287,329 @@
   },
   "ConstValues": [
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
       "kind": "IntegerLiteral",
       "offset": 592,
       "length": 6,
       "value": "15000"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
       "kind": "Dictionary",
       "offset": 719,
       "length": 3,
       "value": "[]"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
       "kind": "FloatLiteral",
       "offset": 1746,
       "length": 4,
       "value": "0.35"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/BeaconSignalDiagnostics.swift",
       "kind": "Dictionary",
       "offset": 1805,
       "length": 3,
       "value": "[]"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "StringLiteral",
       "offset": 372,
       "length": 23,
       "value": "\"foreground_navigation\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "BooleanLiteral",
       "offset": 2051,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2096,
       "length": 1,
       "value": "7"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2100,
       "length": 2,
       "value": "24"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2105,
       "length": 2,
       "value": "60"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2110,
       "length": 2,
       "value": "60"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "BooleanLiteral",
       "offset": 2792,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2837,
       "length": 1,
       "value": "7"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2841,
       "length": 2,
       "value": "24"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2846,
       "length": 2,
       "value": "60"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "IntegerLiteral",
       "offset": 2851,
       "length": 2,
       "value": "60"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "StringLiteral",
       "offset": 4753,
       "length": 19,
       "value": "\"paused_background\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "StringLiteral",
       "offset": 13676,
       "length": 7,
       "value": "\"0.6.0\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/Contracts.swift",
       "kind": "StringLiteral",
       "offset": 13839,
       "length": 21,
       "value": "\"https:\/\/metamaps.jp\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreLocationAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreLocationAdapter.swift",
       "kind": "Array",
       "offset": 517,
       "length": 2,
       "value": "[]"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 122,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 183,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 2129,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 2168,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 2207,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 10422,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 10503,
       "length": 3,
       "value": "180"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "IntegerLiteral",
       "offset": 10575,
       "length": 3,
       "value": "180"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "StringLiteral",
       "offset": 10727,
       "length": 14,
       "value": "\"uncalibrated\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "StringLiteral",
       "offset": 10769,
       "length": 5,
       "value": "\"low\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "StringLiteral",
       "offset": 10805,
       "length": 8,
       "value": "\"medium\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "StringLiteral",
       "offset": 10842,
       "length": 6,
       "value": "\"high\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "StringLiteral",
       "offset": 10883,
       "length": 14,
       "value": "\"uncalibrated\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "StringLiteral",
       "offset": 12153,
       "length": 38,
       "value": "\"Core Motion attitude updates failed.\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "BooleanLiteral",
       "offset": 12230,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/CoreMotionAdapter.swift",
       "kind": "StringLiteral",
       "offset": 12829,
       "length": 10,
       "value": "\"attitude\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/GyroYawIntegrator.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/GyroYawIntegrator.swift",
       "kind": "IntegerLiteral",
       "offset": 916,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/ManifestRepository.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/ManifestRepository.swift",
       "kind": "IntegerLiteral",
       "offset": 2395,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/ManifestRepository.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/ManifestRepository.swift",
       "kind": "StringLiteral",
       "offset": 2434,
       "length": 33,
       "value": "\"jp.metamaps.MetamapsPositioning\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/ManifestRepository.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/ManifestRepository.swift",
       "kind": "BooleanLiteral",
       "offset": 2482,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "BooleanLiteral",
       "offset": 1695,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "BooleanLiteral",
       "offset": 2178,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "IntegerLiteral",
       "offset": 3000,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "BooleanLiteral",
       "offset": 3184,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "BooleanLiteral",
       "offset": 3231,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "BooleanLiteral",
       "offset": 3276,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "BooleanLiteral",
       "offset": 3322,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.rxMqag\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.3py2OS\/Positioning\/Sources\/MetamapsPositioning\/MetamapsPositioningClient.swift",
       "kind": "Array",
       "offset": 3687,
       "length": 2,

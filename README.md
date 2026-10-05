@@ -32,7 +32,7 @@ repository builds against them, so you do not need any other download.
 | Android | minSdk 24, compileSdk 36 or later, JDK 17 | Gradle 9.8.0, Android Gradle Plugin 9.4.1, Kotlin 2.4.20 |
 | Flutter | Flutter 3.44.9, Dart 3.12.2, plus the iOS and Android minimums above | Flutter 3.44.9 |
 
-All three platforms share one version number. Release ZIPs record it in a `VERSION` file.
+All three platforms share one version number, and each version has a tag in this repository, such as `v0.6.0`.
 
 ## Quick start
 

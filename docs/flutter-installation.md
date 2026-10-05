@@ -9,16 +9,8 @@ Flutter 3.44.9 and Dart 3.12.2.
 
 Place the plugin in a fixed directory inside your app repository, for example `vendor/metamaps-flutter`.
 
-From a release ZIP (`MetamapsSDK-Flutter-<version>.zip`):
-
-```bash
-mkdir -p vendor
-unzip MetamapsSDK-Flutter-*.zip -d vendor
-mv vendor/MetamapsSDK-Flutter-* vendor/metamaps-flutter
-```
-
-From the [public repository](https://github.com/boldright/Metamaps-SDK), copy its `flutter/metamaps_flutter` directory
-(run from your app repository). It bundles the iOS and Android libraries, just like the ZIP:
+Clone the [public repository](https://github.com/boldright/Metamaps-SDK) and copy its `flutter/metamaps_flutter`
+directory (run from your app repository). The directory bundles the iOS and Android libraries:
 
 ```bash
 git clone https://github.com/boldright/Metamaps-SDK.git ../Metamaps-SDK
@@ -312,17 +304,20 @@ flutter build ios --simulator --debug
 
 ## 11. Update the SDK
 
-Replace the whole `vendor/metamaps-flutter/` directory with the new version. Do not change your app's
-`pubspec.yaml`, `android/build.gradle.kts`, `android/settings.gradle.kts`, `Info.plist`, `AndroidManifest.xml`, or
-your code.
+Check out the new version in your clone of the public repository and replace the whole `vendor/metamaps-flutter/`
+directory. Do not change your app's `pubspec.yaml`, `android/build.gradle.kts`, `android/settings.gradle.kts`,
+`Info.plist`, `AndroidManifest.xml`, or your code.
 
 ```bash
+git -C ../Metamaps-SDK fetch --tags
+git -C ../Metamaps-SDK checkout v<version>
 rm -rf vendor/metamaps-flutter
-unzip MetamapsSDK-Flutter-*.zip -d vendor
-mv vendor/MetamapsSDK-Flutter-* vendor/metamaps-flutter
+cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-**Do not skip `rm -rf`.** If `vendor/metamaps-flutter` still exists, `mv` moves the new directory **into** it.
+Replace `<version>` with the version to install, for example `0.6.0`.
+
+**Do not skip `rm -rf`.** If `vendor/metamaps-flutter` still exists, `cp -R` copies the new directory **into** it.
 Flutter then keeps reading the old `vendor/metamaps-flutter/pubspec.yaml`, `android/`, and `ios/`, and the build
 succeeds with the old SDK without any error or warning.
 
@@ -337,8 +332,7 @@ flutter build ios --config-only
 Apps that stay on CocoaPods must also run `cd ios && pod install`. The plugin's podspec carries a version, so
 without this step the app keeps building with the old version.
 
-A release ZIP records its version in `vendor/metamaps-flutter/VERSION`. At run time, read
-`metamapsSdkVersion`:
+To check the installed version, read `metamapsSdkVersion` at run time:
 
 ```dart
 import 'package:metamaps_flutter/metamaps_flutter.dart';
