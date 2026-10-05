@@ -1,0 +1,276 @@
+{
+  "schema": "metamap.positioning-manifest.v1",
+  "mapId": "11111111-1111-4111-8111-111111111111",
+  "groupId": "22222222-2222-4222-8222-222222222222",
+  "revision": 1,
+  "generatedAt": "2026-07-23T00:00:00Z",
+  "expiresAt": "2027-07-23T00:00:00Z",
+  "algorithm": {
+    "version": "1.0.0-prototype",
+    "parameters": {
+      "particleCount": 512,
+      "defaultCalibratedRssiAt1mDbm": -59,
+      "defaultPathLossExponent": 2.15,
+      "defaultRssiSigmaDb": 5,
+      "receiverHeightM": 1.2,
+      "stepLengthM": 0.72,
+      "coastTimeoutMs": 4000,
+      "outsideSoftMarginM": 0.5,
+      "accuracyFloorM": 1.2
+    }
+  },
+  "coordinateFrame": {
+    "origin": [
+      139.7,
+      35.68
+    ],
+    "axis": "x-east-y-up-z-south"
+  },
+  "floors": [
+    {
+      "id": "33333333-3333-4333-8333-333333333333",
+      "label": "Office 1F",
+      "elevationM": 0
+    }
+  ],
+  "connectors": [],
+  "walkableGeometry": {
+    "schema": "metamap.positioning-map.v1",
+    "floors": [
+      {
+        "floorId": "33333333-3333-4333-8333-333333333333",
+        "walkablePolygons": [
+          [
+            [
+              0,
+              0
+            ],
+            [
+              24,
+              0
+            ],
+            [
+              24,
+              14
+            ],
+            [
+              0,
+              14
+            ]
+          ]
+        ],
+        "walls": [
+          [
+            [
+              12,
+              4
+            ],
+            [
+              12,
+              10
+            ]
+          ]
+        ],
+        "corridorCenterlines": [
+          [
+            2,
+            2
+          ],
+          [
+            20,
+            2
+          ],
+          [
+            20,
+            10
+          ],
+          [
+            10,
+            10
+          ]
+        ]
+      }
+    ]
+  },
+  "beacons": [
+    {
+      "id": "44444444-4444-4444-8444-000000000001",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 100,
+      "minor": 1,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.70001105908494,
+        35.67999101684716,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "north",
+      "powerMode": "battery_continuous",
+      "advertisingIntervalMs": 500,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    },
+    {
+      "id": "44444444-4444-4444-8444-000000000002",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 100,
+      "minor": 2,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.70008847267965,
+        35.67999101684716,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "north",
+      "powerMode": "battery_continuous",
+      "advertisingIntervalMs": 500,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    },
+    {
+      "id": "44444444-4444-4444-8444-000000000003",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 100,
+      "minor": 3,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.7001769453593,
+        35.67999101684716,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "north",
+      "powerMode": "solar_intermittent",
+      "advertisingIntervalMs": 2000,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    },
+    {
+      "id": "44444444-4444-4444-8444-000000000004",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 100,
+      "minor": 4,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.700254358954,
+        35.67999101684716,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "north",
+      "powerMode": "battery_continuous",
+      "advertisingIntervalMs": 500,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    },
+    {
+      "id": "44444444-4444-4444-8444-000000000005",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 100,
+      "minor": 5,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.70001105908494,
+        35.679883219013064,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "south",
+      "powerMode": "battery_continuous",
+      "advertisingIntervalMs": 500,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    },
+    {
+      "id": "44444444-4444-4444-8444-000000000006",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 100,
+      "minor": 6,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.70008847267965,
+        35.679883219013064,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "south",
+      "powerMode": "battery_continuous",
+      "advertisingIntervalMs": 500,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    },
+    {
+      "id": "44444444-4444-4444-8444-000000000007",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 200,
+      "minor": 7,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.7001769453593,
+        35.679883219013064,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "south",
+      "powerMode": "solar_intermittent",
+      "advertisingIntervalMs": 2000,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    },
+    {
+      "id": "44444444-4444-4444-8444-000000000008",
+      "protocol": "ibeacon",
+      "proximityUuid": "fda50693-a4e2-4fb1-afcf-c6eb07647825",
+      "major": 200,
+      "minor": 8,
+      "floorId": "33333333-3333-4333-8333-333333333333",
+      "position": [
+        139.700254358954,
+        35.679883219013064,
+        2.4
+      ],
+      "mountingHeightM": 2.4,
+      "zoneKey": "south",
+      "powerMode": "battery_continuous",
+      "advertisingIntervalMs": 500,
+      "advertisedMeasuredPowerDbm": -59,
+      "calibratedRssiAt1mDbm": -59,
+      "pathLossExponent": 2.15,
+      "rssiSigmaDb": 4.5,
+      "isEnabled": true
+    }
+  ],
+  "deviceProfiles": [],
+  "diagnosticsPolicy": {},
+  "checksum": "sha256:634b148d7a8b3f775cb8e52e62de07a959a42e88133df0e686c41237d0f10a93"
+}

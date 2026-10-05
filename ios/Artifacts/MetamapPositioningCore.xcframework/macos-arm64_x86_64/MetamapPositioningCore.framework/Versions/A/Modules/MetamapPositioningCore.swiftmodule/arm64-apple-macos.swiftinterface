@@ -1,0 +1,263 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)
+// swift-module-flags: -target arm64-apple-macos13.0 -enable-objc-interop -enable-library-evolution -language-mode 6 -O -enable-experimental-feature DebugDescriptionMacro -module-name MetamapPositioningCore -package-name core
+// swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.4
+import CryptoKit
+import Foundation
+import Swift
+import _Concurrency
+import _StringProcessing
+import _SwiftConcurrencyShims
+public enum PositioningCoreError : Swift::Error, Swift::Equatable {
+  case unsupportedSchema(Swift::String)
+  case unsupportedAlgorithm(Swift::String)
+  case invalidCoordinateFrame
+  case invalidParticleCount(Swift::Int)
+  case unknownEvent(Swift::String)
+  public static func == (a: MetamapPositioningCore::PositioningCoreError, b: MetamapPositioningCore::PositioningCoreError) -> Swift::Bool
+}
+extension MetamapPositioningCore::PositioningCoreError : Swift::CustomStringConvertible {
+  public var description: Swift::String {
+    get
+  }
+}
+public struct PositioningManifest : Swift::Decodable, Swift::Sendable {
+  public let schema: Swift::String
+  public let mapId: Foundation::UUID
+  public let groupId: Foundation::UUID
+  public let revision: Swift::Int
+  public let generatedAt: Swift::String
+  public let expiresAt: Swift::String
+  public let algorithm: MetamapPositioningCore::AlgorithmConfiguration
+  public let coordinateFrame: MetamapPositioningCore::CoordinateFrame
+  public let floors: [MetamapPositioningCore::PositioningFloor]
+  public let connectors: [MetamapPositioningCore::PositioningConnector]
+  public let walkableGeometry: MetamapPositioningCore::PositioningMap
+  public let beacons: [MetamapPositioningCore::PositioningBeacon]
+  public let receiverProfiles: [MetamapPositioningCore::PositioningReceiverProfile]?
+  public let checksum: Swift::String
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningConnector : Swift::Decodable, Swift::Sendable {
+  public let kind: Swift::String?
+  public let fromFloorId: Foundation::UUID?
+  public let toFloorId: Foundation::UUID?
+  public let path: [[Swift::Double]]?
+  public let widthM: Swift::Double?
+  public let speedMps: Swift::Double?
+  public let bidirectional: Swift::Bool?
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningReceiverProfile : Swift::Decodable, Swift::Sendable {
+  public let classId: Swift::String
+  public let platform: Swift::String
+  public let models: [Swift::String]
+  public let biasDb: Swift::Double
+  public let sigmaInflationDb: Swift::Double?
+  public let isReference: Swift::Bool?
+  public let confidence: Swift::Double?
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct AlgorithmConfiguration : Swift::Decodable, Swift::Sendable {
+  public let version: Swift::String
+  public let parameters: MetamapPositioningCore::EstimatorParameters
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct EstimatorParameters : Swift::Decodable, Swift::Sendable {
+  public let particleCount: Swift::Int
+  public let defaultCalibratedRssiAt1mDbm: Swift::Double
+  public let defaultPathLossExponent: Swift::Double
+  public let defaultRssiSigmaDb: Swift::Double
+  public let receiverHeightM: Swift::Double
+  public let stepLengthM: Swift::Double
+  public let pdrEnabled: Swift::Bool
+  public let coastTimeoutMs: Swift::Int64
+  public let outsideSoftMarginM: Swift::Double
+  public let accuracyFloorM: Swift::Double
+  public let maxOutputSpeedMps: Swift::Double?
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct CoordinateFrame : Swift::Decodable, Swift::Sendable {
+  public let origin: [Swift::Double]
+  public let axis: Swift::String
+  public let xAxisMagneticBearingDeg: Swift::Double?
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningFloor : Swift::Decodable, Swift::Sendable {
+  public let id: Foundation::UUID
+  public let label: Swift::String
+  public let elevationM: Swift::Double
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningMap : Swift::Decodable, Swift::Sendable {
+  public let schema: Swift::String
+  public let floors: [MetamapPositioningCore::PositioningFloorGeometry]
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningFloorGeometry : Swift::Decodable, Swift::Sendable {
+  public let floorId: Foundation::UUID
+  public let constraintMode: Swift::String
+  public let walkablePolygons: [[[Swift::Double]]]
+  public let holePolygons: [[[Swift::Double]]]
+  public let obstaclePolygons: [[[[Swift::Double]]]]
+  public let walls: [[[Swift::Double]]]
+  public let corridorCenterlines: [[Swift::Double]]
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningBeacon : Swift::Decodable, Swift::Sendable {
+  public let id: Foundation::UUID
+  public let protocolName: Swift::String
+  public let proximityUuid: Swift::String
+  public let major: Swift::Int
+  public let minor: Swift::Int
+  public let floorId: Foundation::UUID
+  public let position: [Swift::Double]
+  public let mountingHeightM: Swift::Double?
+  public let powerMode: Swift::String
+  public let advertisingIntervalMs: Swift::Int64
+  public let advertisedMeasuredPowerDbm: Swift::Double?
+  public let calibratedRssiAt1mDbm: Swift::Double?
+  public let pathLossExponent: Swift::Double?
+  public let rssiSigmaDb: Swift::Double?
+  public let isEnabled: Swift::Bool
+  public var key: Swift::String {
+    get
+  }
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct BeaconObservation : Swift::Codable, Swift::Sendable {
+  public let beaconKey: Swift::String
+  public let uuid: Swift::String
+  public let major: Swift::Int
+  public let minor: Swift::Int
+  public let rssiDbm: Swift::Double
+  public let windowStartMonotonicTimestampMs: Swift::Int64
+  public let monotonicTimestampMs: Swift::Int64
+  public let source: Swift::String?
+  public let duplicateCount: Swift::Int?
+  public let rssiSigmaDb: Swift::Double?
+  public init(beaconKey: Swift::String, uuid: Swift::String, major: Swift::Int, minor: Swift::Int, rssiDbm: Swift::Double, windowStartMonotonicTimestampMs: Swift::Int64, monotonicTimestampMs: Swift::Int64, source: Swift::String? = nil, duplicateCount: Swift::Int? = nil, rssiSigmaDb: Swift::Double? = nil)
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct ActivityDiagnosticFlags : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let stationary: Swift::Bool
+  public let walking: Swift::Bool
+  public let running: Swift::Bool
+  public let automotive: Swift::Bool
+  public let cycling: Swift::Bool
+  public let unknown: Swift::Bool
+  public init(stationary: Swift::Bool, walking: Swift::Bool, running: Swift::Bool, automotive: Swift::Bool, cycling: Swift::Bool, unknown: Swift::Bool)
+  public static func == (a: MetamapPositioningCore::ActivityDiagnosticFlags, b: MetamapPositioningCore::ActivityDiagnosticFlags) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct ReplayEvent : Swift::Codable, Swift::Sendable {
+  public let type: Swift::String
+  public let monotonicTimestampMs: Swift::Int64
+  public let observations: [MetamapPositioningCore::BeaconObservation]?
+  public let headingDeg: Swift::Double?
+  public let headingAccuracyDeg: Swift::Double?
+  public let rollDeg: Swift::Double?
+  public let pitchDeg: Swift::Double?
+  public let magneticFieldAccuracy: Swift::String?
+  public let relativeYawDeg: Swift::Double?
+  public let magneticFieldMicroTesla: Swift::Double?
+  public let magneticFieldXMicroTesla: Swift::Double?
+  public let magneticFieldYMicroTesla: Swift::Double?
+  public let magneticFieldZMicroTesla: Swift::Double?
+  public let stepLengthM: Swift::Double?
+  public let pedometerDistanceM: Swift::Double?
+  public let stepCount: Swift::Int?
+  public let intervalMs: Swift::Int64?
+  public let activity: Swift::String?
+  public let activityConfidence: Swift::String?
+  public let activityStartMonotonicTimestampMs: Swift::Int64?
+  public let activityInitialSnapshot: Swift::Bool?
+  public let activityFlags: MetamapPositioningCore::ActivityDiagnosticFlags?
+  public let state: Swift::String?
+  public init(type: Swift::String, monotonicTimestampMs: Swift::Int64, observations: [MetamapPositioningCore::BeaconObservation]? = nil, headingDeg: Swift::Double? = nil, headingAccuracyDeg: Swift::Double? = nil, rollDeg: Swift::Double? = nil, pitchDeg: Swift::Double? = nil, magneticFieldAccuracy: Swift::String? = nil, relativeYawDeg: Swift::Double? = nil, magneticFieldMicroTesla: Swift::Double? = nil, magneticFieldXMicroTesla: Swift::Double? = nil, magneticFieldYMicroTesla: Swift::Double? = nil, magneticFieldZMicroTesla: Swift::Double? = nil, stepLengthM: Swift::Double? = nil, pedometerDistanceM: Swift::Double? = nil, stepCount: Swift::Int? = nil, intervalMs: Swift::Int64? = nil, activity: Swift::String? = nil, activityConfidence: Swift::String? = nil, activityStartMonotonicTimestampMs: Swift::Int64? = nil, activityInitialSnapshot: Swift::Bool? = nil, activityFlags: MetamapPositioningCore::ActivityDiagnosticFlags? = nil, state: Swift::String? = nil)
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct LocalPosition : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let x: Swift::Double
+  public let y: Swift::Double
+  public let z: Swift::Double
+  public init(x: Swift::Double, y: Swift::Double, z: Swift::Double)
+  public static func == (a: MetamapPositioningCore::LocalPosition, b: MetamapPositioningCore::LocalPosition) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositionEstimate : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let sequence: Swift::Int64
+  public let monotonicTimestampMs: Swift::Int64
+  public let status: Swift::String
+  public let mode: Swift::String
+  public let floorId: Foundation::UUID?
+  public let floorProbability: Swift::Double
+  public let local: MetamapPositioningCore::LocalPosition?
+  public let accuracyRadiusM: Swift::Double
+  public let headingDeg: Swift::Double?
+  public let headingAccuracyDeg: Swift::Double?
+  public let speedMps: Swift::Double
+  public let freshBeaconCount: Swift::Int
+  public let lastBleAgeMs: Swift::Int64?
+  public let manifestRevision: Swift::Int
+  public let algorithmVersion: Swift::String
+  public let stale: Swift::Bool
+  public let diagnosticFlags: [Swift::String]
+  public static func == (a: MetamapPositioningCore::PositionEstimate, b: MetamapPositioningCore::PositionEstimate) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct FixtureTolerance : Swift::Decodable, Swift::Sendable {
+  public let positionM: Swift::Double
+  public let accuracyM: Swift::Double
+  public let probability: Swift::Double
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct PositioningFixture : Swift::Decodable, Swift::Sendable {
+  public let schema: Swift::String
+  public let name: Swift::String
+  public let seed: Swift::UInt64
+  public let manifest: Swift::String
+  public let observations: Swift::String
+  public let groundTruth: Swift::String
+  public let expected: Swift::String
+  public let receiverModelId: Swift::String?
+  public let calibrationPurpose: Swift::String?
+  public let tolerances: MetamapPositioningCore::FixtureTolerance
+  public init(from decoder: any Swift::Decoder) throws
+}
+public struct Wgs84Position : Swift::Codable, Swift::Equatable, Swift::Sendable {
+  public let longitude: Swift::Double
+  public let latitude: Swift::Double
+  public let elevationM: Swift::Double
+  public init(longitude: Swift::Double, latitude: Swift::Double, elevationM: Swift::Double)
+  public static func == (a: MetamapPositioningCore::Wgs84Position, b: MetamapPositioningCore::Wgs84Position) -> Swift::Bool
+  public func encode(to encoder: any Swift::Encoder) throws
+  public init(from decoder: any Swift::Decoder) throws
+}
+public enum PositioningCoordinateTransform {
+  public static func wgs84ToLocal(_ position: MetamapPositioningCore::Wgs84Position, frame: MetamapPositioningCore::CoordinateFrame) throws -> MetamapPositioningCore::LocalPosition
+  public static func localToWgs84(_ local: MetamapPositioningCore::LocalPosition, frame: MetamapPositioningCore::CoordinateFrame) throws -> MetamapPositioningCore::Wgs84Position
+}
+public enum ManifestChecksum {
+  public static func compute(_ manifestData: Foundation::Data) throws -> Swift::String
+}
+final public class PositioningEstimator {
+  public static let maxStepsPerEvent: Swift::Int
+  public static let randomWalkSpeedMps: Swift::Double
+  public static let stationaryRandomWalkSpeedMps: Swift::Double
+  public static let lowConfidenceStationaryRandomWalkSpeedMps: Swift::Double
+  public init(manifest: MetamapPositioningCore::PositioningManifest, seed: Swift::UInt64, receiverModelId: Swift::String? = nil) throws
+  final public func process(_ event: MetamapPositioningCore::ReplayEvent) throws -> MetamapPositioningCore::PositionEstimate?
+  public static let stepPropagationGraceMs: Swift::Int64
+  @objc deinit
+}
+public enum PositioningReceiverProfiles {
+  public static func normalizeDeviceModel(platform: Swift::String?, raw: Swift::String?) -> Swift::String?
+  public static func normalizeModel(_ raw: Swift::String?) -> Swift::String?
+  public static func resolveBiasDb(manifest: MetamapPositioningCore::PositioningManifest, receiverModelId: Swift::String?) -> Swift::Double
+}

@@ -1,0 +1,33 @@
+name: metamap_positioning
+description: Metamaps BLE indoor positioning and embedded slug-based map view SDK for Flutter.
+version: 0.5.0
+publish_to: none
+homepage: https://metamaps.jp
+topics:
+  - bluetooth
+  - indoor-positioning
+  - maps
+
+environment:
+  sdk: '>=3.12.2 <4.0.0'
+  flutter: '>=3.44.9'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  meta: ^1.17.0
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  pigeon: 27.3.0
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: jp.metamaps.metamap_positioning
+        pluginClass: MetamapPositioningPlugin
+      ios:
+        pluginClass: MetamapPositioningPlugin
