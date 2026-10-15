@@ -32,7 +32,7 @@ repository builds against them, so you do not need any other download.
 | Android | minSdk 24, compileSdk 36 or later, JDK 17 | Gradle 9.8.0, Android Gradle Plugin 9.4.1, Kotlin 2.4.20 |
 | Flutter | Flutter 3.44.9, Dart 3.12.2, plus the iOS and Android minimums above | Flutter 3.44.9 |
 
-All three platforms share one version number, and each version has a tag in this repository, such as `v0.6.0`.
+All three platforms share one version number, and each version has a tag in this repository, such as `v0.7.0`.
 
 ## Quick start
 
@@ -66,7 +66,7 @@ try await mapView.load()
 ```kotlin
 val mapView = MetamapsMapView(context)
 mapView.configure(MetamapsMapViewConfiguration(mapSlug = "example", language = "en"))
-mapView.load()
+lifecycleScope.launch { mapView.load() } // load() is a suspend function.
 ```
 
 ### Flutter
@@ -82,11 +82,14 @@ MetamapsMapView(
 
 ## What a map-only app needs
 
-- **Android:** nothing beyond the dependency. The libraries add only the `INTERNET` permission to your app.
+- **Android:** nothing beyond the dependency. The libraries add only the `INTERNET` permission to your app. To
+  use GPS location on maps that enable it, declare and request precise location permission in your app. To offer
+  the map's voice input, declare and request `RECORD_AUDIO`; without it, the map hides its microphone button.
 - **iOS:** four `Info.plist` purpose strings. The microphone and speech recognition keys are used by the map's
-  voice input. The location and motion keys are checked by App Store Connect because the SDK links Core Location
-  and Core Motion; the system never shows those prompts unless indoor positioning starts. The developer guide has
-  the exact keys.
+  voice input. The location key is also used by GPS location on maps that enable it, so the system asks for
+  location permission the first time the user taps the location button in such a map. The motion key is used only
+  by indoor positioning. App Store Connect checks for the location and motion keys because the SDK links Core
+  Location and Core Motion. The developer guide has the exact keys.
 
 ## Indoor positioning (optional)
 
@@ -141,11 +144,16 @@ Kotlin SDKs.
 | Show a spot, choose a floor, set a destination, change the language | `showSpot` / `selectFloor` / `setDestination` / `setLanguage` | Same names | Same names |
 | Map view web settings | `additionalQuery` / `retryPolicy` / `userAgentAppendix` / `isWebViewInspectable` | Same names | Same names |
 | External link handling | Delegate and `openExternalLink(_:)` | Handler and `openExternalLink()` | Callback and `openExternalLink()` |
+| Back navigation | `canGoBack` / `goBack()` / `.canGoBackChanged` | `canGoBack` (`StateFlow`) / `goBack()` / `CanGoBackChanged` | `controller.canGoBack` / `goBack()` / `MapCanGoBackChanged` |
 | Errors | `MetamapsError` | `MetamapsError` | `MetamapsError` |
 | Indoor positioning: reset the walking baseline | `resetPedestrianRoute()` | `resetPedestrianRoute()` | `resetPedestrianRoute()` |
 | Indoor positioning: device heading | `motionHeading` | `MotionHeading` | `MotionHeadingEvent` / `MapMotionHeadingChanged` |
 | Indoor positioning: beacon diagnostics opt-in | `beaconDiagnosticsEnabled` / `showsBeaconDiagnostics` | Same names | Same names |
 | WGS 84 altitude | `Wgs84Position.elevationM` | Same name | Same name |
+
+Back navigation closes what the map opened, such as a spot, before your app handles back itself. Connect it to an
+`OnBackPressedCallback` on Android, to `PopScope` in Flutter, or to your own back control on iOS. The map's share
+buttons open the system share sheet on every platform without app code.
 
 `resetPedestrianRoute()` discards the step count, step interval, speed, and estimator state that built up while
 the user was, for example, reading a description or walking to the start point. It keeps the latest sensor
@@ -159,8 +167,10 @@ contains raw Bluetooth or motion samples. Web content that needs the device head
 
 - The SDK contains no client secret. Published maps load by slug. To show an unpublished map, pass a short-lived
   preview token issued by Metamaps as `previewToken`.
-- The map view only navigates within the configured origin and validates every bridge message (bridge version,
-  map and group, and a monotonically increasing sequence number).
+- The map view keeps its page on the configured origin and validates every bridge message (bridge version, map and
+  group, and a monotonically increasing sequence number). Only the map's page can use the bridge. Embedded https
+  content, such as YouTube videos in spot descriptions, loads inside the page; other links, new windows, and
+  downloads open outside the map view.
 - Indoor positions are computed on the device. The SDK does not send coordinates or signal strengths to any
   server, and never passes raw Bluetooth or motion samples to the map's JavaScript.
 - Beacon diagnostics are off by default. When enabled, the snapshot stays on the device.

@@ -2,6 +2,7 @@
 
 package jp.metamaps.mapview
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
@@ -12,12 +13,16 @@ import android.graphics.Color
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
+import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.speech.SpeechRecognizer
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.webkit.DownloadListener
+import android.webkit.GeolocationPermissions
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
@@ -43,6 +48,7 @@ import jp.metamaps.positioning.android.MetamapsInternalApi
 import jp.metamaps.positioning.android.MetamapsPositioningClient
 import jp.metamaps.positioning.android.MetamapsPositioningEvent
 import jp.metamaps.positioning.android.MotionHeadingReading
+import jp.metamaps.positioning.android.PermissionRequirements
 import jp.metamaps.positioning.android.PositioningLifecycleStatus
 import jp.metamaps.positioning.android.PositioningUpdate
 import kotlinx.coroutines.CancellationException
@@ -57,8 +63,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,6 +80,13 @@ import org.json.JSONObject
  * For maps with indoor positioning, it can also show the user's location while the app is in use.
  *
  * Call [load] after [configure], and call [dispose] when the view is no longer needed.
+ *
+ * - Call every method on the main thread.
+ * - Host commands such as [selectFloor], [showSpot], [setDestination], and [setLanguage] throw a [MetamapsError]
+ *   with `BRIDGE_HANDSHAKE_FAILED` until [MetamapsMapViewEvent.Ready]. They throw again from the moment the WebView
+ *   starts loading another page, such as after [setLanguage] or [reload], until the next `Ready`.
+ * - Map-only features need permissions that your app requests itself; the SDK never shows a permission dialog for
+ *   them. GPS location in the map needs `ACCESS_FINE_LOCATION`, and voice input needs `RECORD_AUDIO`.
  */
 @SuppressLint("SetJavaScriptEnabled")
 class MetamapsMapView @JvmOverloads constructor(
@@ -78,11 +94,21 @@ class MetamapsMapView @JvmOverloads constructor(
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0,
 ) : FrameLayout(context, attrs, defStyleAttr) {
-    /** The WebView that shows the map. Do not control it directly; use the public commands. */
-    val webView: WebView = WebView(context)
+    /**
+     * The WebView that shows the map. Do not control it directly; use the public commands.
+     *
+     * Read this property when you need it instead of keeping the instance: a new WebView replaces it after the
+     * WebView renderer process ends, and anything set on the old one is lost. Do not replace its `WebViewClient`
+     * or `WebChromeClient`; the SDK uses them for links, permissions, and recovery.
+     */
+    var webView: WebView = WebView(context)
+        private set
     private val defaultUserAgent = webView.settings.userAgentString.orEmpty()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+    /** Runs work for views that are never attached to a window, whose own post() queue never runs. */
+    private val mainHandler = Handler(Looper.getMainLooper())
     private val mutableEvents = MutableSharedFlow<MetamapsMapViewEvent>(extraBufferCapacity = 64)
+    private val mutableCanGoBack = MutableStateFlow(false)
     private val nativeBridge = NativeBridge()
     private var configuration: MetamapsMapViewConfiguration? = null
     private var positioningClient: MetamapsPositioningClient? = null
@@ -96,6 +122,8 @@ class MetamapsMapView @JvmOverloads constructor(
     private var activeLoadSession: LoadSession? = null
     private var activeLoadAttempt: LoadAttempt? = null
     private var currentPageFailed = false
+    /** The main frame document URL last requested, used to tell main frame TLS errors from subresource ones. */
+    private var mainFrameUrl: URI? = null
     private var pendingBeaconSignals: List<BeaconSignalReading>? = null
     /** Waits for beacon signals and retries automatic positioning. Never advances in a `USER_ACTION` map view. */
     private val automaticLoop = AutomaticPositioningLoop()
@@ -104,6 +132,8 @@ class MetamapsMapView @JvmOverloads constructor(
     private var lastSentCapabilities: CapabilityReport? = null
     /** The automatic positioning configuration last announced in `bridge.hello`, used to decide whether a correction is needed. */
     private var lastSentAutomaticPositioning: Boolean? = null
+    /** Whether voice input was last announced in `bridge.hello` as available. */
+    private var lastSentSpeechRecognition: Boolean? = null
     private var windowVisible = false
     private val pendingCenterReticleRequests = mutableMapOf<UUID, CompletableDeferred<MapCenterReticleCandidate?>>()
     private var beaconSignalPresentationScheduled = false
@@ -119,29 +149,44 @@ class MetamapsMapView @JvmOverloads constructor(
         }
     }
 
-    /** A SharedFlow of map, positioning, and error events. */
+    /**
+     * A SharedFlow of map, positioning, and error events. It has no replay, so start collecting before [load];
+     * events sent while nothing collects are lost. [eventListener] receives the same events.
+     */
     val events: SharedFlow<MetamapsMapViewEvent> = mutableEvents.asSharedFlow()
+
+    /**
+     * Whether the web map has a step that going back closes, such as an open spot. Enable the host's back handling,
+     * such as an `OnBackPressedCallback`, while this is `true`, and call [goBack] from it. `false` until the map is
+     * ready, and again whenever the WebView loads a new page.
+     */
+    val canGoBack: StateFlow<Boolean> = mutableCanGoBack.asStateFlow()
 
     /** The current map load state. */
     @Volatile
     var loadState: MapViewLoadState = MapViewLoadState.IDLE
         private set
 
-    /** A listener for receiving events without the SharedFlow. */
+    /** A listener for receiving events without the SharedFlow. Always called on the main thread. */
     var eventListener: ((MetamapsMapViewEvent) -> Unit)? = null
 
-    /** A handler that lets the host app handle external links with allowed schemes. */
+    /**
+     * Decides how a link that leaves the map opens. It is also called for downloads and for links that open a new
+     * window, including ones on the map's own origin. Return `HANDLED` to open the link yourself, for example after
+     * a confirmation dialog, through [openExternalLink]. [MetamapsMapViewEvent.ExternalLinkRequested] is emitted
+     * either way, so do not open the link again from that event.
+     */
     var externalLinkHandler: ((URI) -> MetamapsExternalLinkDecision)? = null
 
     init {
         configureWebView()
-        addView(
-            webView,
-            LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT),
-        )
     }
 
-    /** Validates and applies the map and positioning configuration. */
+    /**
+     * Validates and applies the map and positioning configuration. Call it before [load]. After changing the
+     * configuration of a loaded view, call [reload]; until then host commands throw, because the loaded page belongs
+     * to the previous configuration.
+     */
     fun configure(value: MetamapsMapViewConfiguration) {
         checkMainThread()
         ensureNotDisposed("configure")
@@ -153,12 +198,10 @@ class MetamapsMapView @JvmOverloads constructor(
         positioningEventsJob?.cancel()
         positioningClient?.dispose()
         clearBeaconSignalPresentation()
+        // The loaded page belongs to the previous configuration until the host reloads it.
+        resetPageBridge()
         configuration = value
-        webView.settings.userAgentString = buildMetamapsUserAgent(
-            defaultUserAgent,
-            MetamapsSdk.VERSION,
-            value.userAgentAppendix,
-        )
+        applyUserAgent(value)
         if (value.isWebViewInspectable) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
@@ -172,7 +215,13 @@ class MetamapsMapView @JvmOverloads constructor(
         }
     }
 
-    /** Loads the web map and waits for a successful HTTP response and the end of loading. Does not wait for `Ready`. */
+    /**
+     * Loads the web map and waits for a successful HTTP response and the end of loading. Does not wait for `Ready`.
+     *
+     * A newer [load] or [reload], [dispose], or cancelling the calling coroutine ends this call with a
+     * `CancellationException`. When the map later fails, for example because the WebView renderer process ended,
+     * the view emits `LoadState(FAILED)` and an error whose `userAction` is `RETRY`; call [reload] to recover.
+     */
     suspend fun load() {
         checkMainThread()
         ensureNotDisposed("load")
@@ -222,13 +271,19 @@ class MetamapsMapView @JvmOverloads constructor(
     /** Reloads the map with the current configuration. */
     suspend fun reload() = load()
 
-    /** Requests Android positioning permissions, starting from a user action. */
+    /**
+     * Requests the Android permissions that indoor positioning needs. It may show OS permission dialogs, so call it
+     * from a user action. It never requests `RECORD_AUDIO`, and it requests location only for maps with indoor
+     * positioning. For voice input, and for GPS location in a map without indoor positioning, request the
+     * permissions yourself.
+     */
     suspend fun requestPositioningAuthorization(activity: Activity? = context.findActivity()) {
         ensureNotDisposed("requestPositioningAuthorization")
         val client = positioningClient ?: throw invariant("MapView is not configured")
         if (client.status == PositioningLifecycleStatus.UNCONFIGURED) client.configure()
         validateManifestIdentityIfReady()
-        val host = activity ?: throw MetamapsError(
+        // A null Activity, such as from a plugin that is not attached to one, falls back to the view's own Activity.
+        val host = activity ?: context.findActivity() ?: throw MetamapsError(
             MetamapsError.Code.LOCATION_PERMISSION_DENIED,
             "An Activity is required to request Android runtime permissions.",
             true,
@@ -298,6 +353,17 @@ class MetamapsMapView @JvmOverloads constructor(
         sendHostCommand("map.setLanguage", mapOf("language" to language))
     }
 
+    /**
+     * Closes the web map's last step, as the browser's back button does on the web, such as an open spot. Returns
+     * `false` and does nothing when [canGoBack] is `false`, so that the host can handle back itself.
+     */
+    fun goBack(): Boolean {
+        checkMainThread()
+        if (!mutableCanGoBack.value || !bridgeValidator.handshakeComplete) return false
+        send("map.goBack", emptyMap<String, Any?>())
+        return true
+    }
+
     /** Shows or hides the center reticle. Hidden by default. */
     fun setCenterReticleEnabled(enabled: Boolean) {
         sendHostCommand("map.setCenterReticle", mapOf("enabled" to enabled))
@@ -315,6 +381,8 @@ class MetamapsMapView @JvmOverloads constructor(
     /**
      * Gets the candidate on the selected floor under the reticle at the time of the call, once.
      * Returns `null` when the reticle is hidden, all floors are shown, or the reticle does not hit a floor.
+     * Fails with a [MetamapsError] (`BRIDGE_HANDSHAKE_FAILED`) when the page changes, the view is disposed, or the
+     * map does not answer within 5 seconds.
      */
     suspend fun requestCenterReticleCandidate(): MapCenterReticleCandidate? {
         ensureNotDisposed("requestCenterReticleCandidate")
@@ -364,16 +432,15 @@ class MetamapsMapView @JvmOverloads constructor(
                 }
             }
         }
-        val intent = Intent(Intent.ACTION_VIEW, androidUri)
-        if (context.findActivity() == null) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        try {
-            context.startActivity(intent)
-        } catch (_: ActivityNotFoundException) {
-            // Unsupported external schemes are intentionally ignored.
-        }
+        // Unsupported external schemes are intentionally ignored.
+        startOutsideActivity(Intent(Intent.ACTION_VIEW, androidUri))
     }
 
-    /** Ends positioning, the WebView, and subscriptions, and releases held resources. */
+    /**
+     * Ends positioning, the WebView, and subscriptions, and releases held resources. Call it even in apps that only
+     * show maps: every configured view registers application lifecycle callbacks that only this releases. Calling it
+     * again does nothing.
+     */
     fun dispose() {
         checkMainThread()
         if (disposed) return
@@ -385,13 +452,17 @@ class MetamapsMapView @JvmOverloads constructor(
         positioningEventsJob = null
         positioningClient?.dispose()
         positioningClient = null
-        failPendingCenterReticleRequests(CancellationException("MapView disposed during center reticle request"))
+        failPendingCenterReticleRequests(
+            bridgeError(MetamapsError.Code.BRIDGE_HANDSHAKE_FAILED, "MapView disposed during center reticle request"),
+        )
         clearBeaconSignalPresentation()
         webView.stopLoading()
         webView.removeJavascriptInterface(JS_INTERFACE)
         webView.webViewClient = WebViewClient()
         webView.webChromeClient = null
+        removeView(webView)
         webView.destroy()
+        updateCanGoBack(false)
         emit(MetamapsMapViewEvent.LoadState(MapViewLoadState.DISPOSED))
         eventListener = null
         externalLinkHandler = null
@@ -412,7 +483,9 @@ class MetamapsMapView @JvmOverloads constructor(
             completion = CompletableDeferred(session.job),
         )
         activeLoadAttempt = attempt
-        webView.loadUrl(mapUrl(config).toString())
+        val url = mapUrl(config)
+        mainFrameUrl = url
+        webView.loadUrl(url.toString())
         return try {
             coroutineScope {
                 val watchdog = launch {
@@ -460,8 +533,11 @@ class MetamapsMapView @JvmOverloads constructor(
         scope.launch {
             try {
                 positioningClient?.configure()
-                validateManifestIdentityIfReady()
-                refreshAutomaticPositioningAnnouncement()
+                // Bridge state belongs to the main thread; only the manifest download runs in the background.
+                withContext(Dispatchers.Main.immediate) {
+                    validateManifestIdentityIfReady()
+                    refreshHelloAnnouncement()
+                }
             } catch (error: MetamapsError) {
                 emit(MetamapsMapViewEvent.Error(error))
                 send("positioning.error", error.toPayload())
@@ -484,12 +560,10 @@ class MetamapsMapView @JvmOverloads constructor(
         when (event) {
             is MetamapsPositioningEvent.Position -> {
                 emit(MetamapsMapViewEvent.Position(event.update))
-                if (!bridgeValidator.handshakeComplete) return
-                try {
-                    validateManifestIdentityIfReady()
+                // A position from the manifest of another map or revision is not painted. The handshake stopped
+                // positioning in that case, and preparePositioningIfNeeded configures the manifest of this page.
+                if (bridgeValidator.handshakeComplete && manifestMatchesPage()) {
                     send("positioning.position", event.update.toPayload())
-                } catch (error: MetamapsError) {
-                    emit(MetamapsMapViewEvent.Error(error))
                 }
             }
             is MetamapsPositioningEvent.BeaconSignals -> {
@@ -512,7 +586,7 @@ class MetamapsMapView @JvmOverloads constructor(
                 send("positioning.capabilities", event.report.toPayload())
                 // Finishing configure or settling permissions can change the automatic positioning configuration.
                 // Correct the hello announcement.
-                refreshAutomaticPositioningAnnouncement()
+                refreshHelloAnnouncement()
             }
             is MetamapsPositioningEvent.Error -> {
                 emit(MetamapsMapViewEvent.Error(event.error))
@@ -536,7 +610,9 @@ class MetamapsMapView @JvmOverloads constructor(
     }
 
     private fun receive(message: String, token: String) {
-        if (disposed || token != pageToken || !isAllowed(webView.url?.let(URI::create))) {
+        if (disposed || token != pageToken ||
+            !isAllowed(webView.url?.let { runCatching { URI.create(it) }.getOrNull() })
+        ) {
             emit(MetamapsMapViewEvent.Error(bridgeError(
                 MetamapsError.Code.BRIDGE_HANDSHAKE_FAILED,
                 "Rejected bridge message origin or document token",
@@ -547,7 +623,8 @@ class MetamapsMapView @JvmOverloads constructor(
             val envelope = BridgeEnvelope.parse(message)
             val ready = bridgeValidator.validate(envelope)
             if (ready != null) {
-                validateManifestIdentityIfReady()
+                // A manifest from an older revision must not block the map: preparePositioningIfNeeded configures
+                // the manifest of this page after the handshake, and positioning commands validate it (15 §3).
                 completeHandshake(ready)
                 return
             }
@@ -608,6 +685,8 @@ class MetamapsMapView @JvmOverloads constructor(
                 ),
             ))
             "map.centerReticleCandidate" -> handleCenterReticleCandidate(envelope.payload)
+            "map.canGoBackChanged" -> envelope.canGoBack?.let(::updateCanGoBack)
+            "map.share" -> envelope.shareRequest?.let(::openShareSheet)
             "map.externalLinkRequested" -> {
                 val value = envelope.payload?.get("url") as? String
                 if (value != null) {
@@ -683,6 +762,9 @@ class MetamapsMapView @JvmOverloads constructor(
         return false
     }
 
+    /** Whether the verified manifest belongs to the loaded page. `true` while there is no page or no manifest yet. */
+    private fun manifestMatchesPage(): Boolean = runCatching { validateManifestIdentityIfReady() }.isSuccess
+
     private fun validateManifestIdentityIfReady() {
         val ready = bridgeValidator.ready ?: return
         val identity = positioningClient?.manifestIdentity ?: return
@@ -711,7 +793,13 @@ class MetamapsMapView @JvmOverloads constructor(
                     ready.manifestRevision,
                 ),
             ))
-            positioningClient?.latestUpdate?.let { send("positioning.position", it.toPayload()) }
+            if (manifestMatchesPage()) {
+                positioningClient?.latestUpdate?.let { send("positioning.position", it.toPayload()) }
+            } else {
+                // 15 §3: stop positioning that runs on the manifest of another map or revision. The map stays usable,
+                // and preparePositioningIfNeeded configures the manifest of this page.
+                stopPositioning()
+            }
             preparePositioningIfNeeded(ready)
         }
     }
@@ -742,8 +830,10 @@ class MetamapsMapView @JvmOverloads constructor(
         }
         val capabilities = client.capabilities()
         val automaticPositioning = isAutomaticPositioningEnabled()
+        val speechRecognition = isSpeechRecognitionAvailable()
         lastSentCapabilities = capabilities
         lastSentAutomaticPositioning = automaticPositioning
+        lastSentSpeechRecognition = speechRecognition
         send(
             "bridge.hello",
             mapOf(
@@ -752,6 +842,11 @@ class MetamapsMapView @JvmOverloads constructor(
                 "capabilities" to capabilities.toPayload(),
                 // Backward-compatible addition in bridge 1.4. True only for map views configured for automatic positioning.
                 "automaticPositioning" to automaticPositioning,
+                // Backward-compatible addition in bridge 1.5. The web map hides its microphone button when false.
+                "speechRecognition" to speechRecognition,
+                // Backward-compatible addition in bridge 1.6. Android WebView has no Web Share API, so the web map
+                // sends `map.share` to the OS share sheet instead of copying the link.
+                "share" to true,
             ),
             onDelivered,
         )
@@ -769,19 +864,33 @@ class MetamapsMapView @JvmOverloads constructor(
                 client.capabilities(),
                 config.positioningConfiguration.motionPolicy,
             ),
-            hasVerifiedManifest = client.manifestIdentity != null,
+            hasVerifiedManifest = client.manifestIdentity != null && manifestMatchesPage(),
+        )
+    }
+
+    /** Whether the web map's voice input can work (`bridge.hello.payload.speechRecognition`). */
+    private fun isSpeechRecognitionAvailable(): Boolean {
+        val baseUrl = configuration?.baseUrl ?: return false
+        return isWebSpeechRecognitionAvailable(
+            baseUrl,
+            PermissionRequirements.isGranted(context, Manifest.permission.RECORD_AUDIO),
+            SpeechRecognizer.isRecognitionAvailable(context),
         )
     }
 
     /**
      * If the manifest download or permission decision finishes after the handshake, send the same `bridge.hello`
      * again to correct the automatic positioning configuration in the runtime. If the first announcement said
-     * false and is never corrected, automatic positioning never starts for that page's lifetime.
+     * false and is never corrected, automatic positioning never starts for that page's lifetime. The same correction
+     * shows or hides the voice input button when the app's microphone permission changes.
      */
-    private fun refreshAutomaticPositioningAnnouncement() {
+    private fun refreshHelloAnnouncement() {
         if (disposed || !bridgeValidator.handshakeComplete) return
-        if (isAutomaticPositioningEnabled() == lastSentAutomaticPositioning) return
-        sendHello()
+        if (isAutomaticPositioningEnabled() != lastSentAutomaticPositioning ||
+            isSpeechRecognitionAvailable() != lastSentSpeechRecognition
+        ) {
+            sendHello()
+        }
     }
 
     // ── Automatic positioning retry loop ─────────────────────────────
@@ -830,7 +939,16 @@ class MetamapsMapView @JvmOverloads constructor(
 
     /** Returned to the foreground: re-evaluate `capabilities` and retry automatic positioning immediately. */
     private fun handleReturnToForeground() {
-        if (disposed) return
+        if (disposed || positioningClient == null) return
+        refreshPermissionDependentState()
+        runAutomaticEffects(automaticLoop.returnToForeground())
+    }
+
+    /**
+     * Re-evaluates what the app's permissions decide: `capabilities`, then the hello announcement. Capabilities go
+     * first because `sendHello` records them as sent, which would otherwise hide a change from the host.
+     */
+    private fun refreshPermissionDependentState() {
         val client = positioningClient ?: return
         val capabilities = client.capabilities()
         if (capabilities != lastSentCapabilities && bridgeValidator.handshakeComplete) {
@@ -838,8 +956,7 @@ class MetamapsMapView @JvmOverloads constructor(
             emit(MetamapsMapViewEvent.Capabilities(capabilities))
             send("positioning.capabilities", capabilities.toPayload())
         }
-        refreshAutomaticPositioningAnnouncement()
-        runAutomaticEffects(automaticLoop.returnToForeground())
+        refreshHelloAnnouncement()
     }
 
     /**
@@ -854,6 +971,15 @@ class MetamapsMapView @JvmOverloads constructor(
         windowVisible = visible
         if (!changed) return
         if (visible) handleReturnToForeground() else runAutomaticEffects(automaticLoop.enterBackground())
+    }
+
+    /**
+     * The app's own permission dialog closes over a visible map without changing window visibility, but the window
+     * regains focus. Re-evaluate so that a newly granted microphone shows the voice input button without a reload.
+     */
+    override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
+        super.onWindowFocusChanged(hasWindowFocus)
+        if (hasWindowFocus && !disposed) refreshPermissionDependentState()
     }
 
     private fun sendHostCommand(type: String, payload: Map<String, Any?>) {
@@ -892,8 +1018,41 @@ class MetamapsMapView @JvmOverloads constructor(
         }
     }
 
+    /** Opens the OS share sheet with the web map's Web Share data. */
+    private fun openShareSheet(request: MapShareRequest) {
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, request.body)
+            request.text?.let { putExtra(Intent.EXTRA_TITLE, it) }
+        }
+        // When no app receives text, nothing happens, as when the user closes the share sheet.
+        startOutsideActivity(Intent.createChooser(send, null))
+    }
+
+    /** Starts an activity outside the map, ignoring an intent that no app handles. */
+    private fun startOutsideActivity(intent: Intent) {
+        if (context.findActivity() == null) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        try {
+            context.startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            // Nothing to open.
+        }
+    }
+
+    private fun updateCanGoBack(value: Boolean) {
+        if (mutableCanGoBack.value == value) return
+        mutableCanGoBack.value = value
+        emit(MetamapsMapViewEvent.CanGoBackChanged(value))
+    }
+
     private fun resetPageBridge() {
-        failPendingCenterReticleRequests(CancellationException("Map document changed during center reticle request"))
+        // The history the web map can go back through belongs to the previous page. Going back across pages would
+        // reload the previous page, such as the one before a language change.
+        updateCanGoBack(false)
+        // A CancellationException here would silently cancel the caller's coroutine instead of failing the request.
+        failPendingCenterReticleRequests(
+            bridgeError(MetamapsError.Code.BRIDGE_HANDSHAKE_FAILED, "Map document changed during center reticle request"),
+        )
         bridgeValidator.reset()
         outboundSequence = 0
         pageToken = UUID.randomUUID().toString()
@@ -939,20 +1098,15 @@ class MetamapsMapView @JvmOverloads constructor(
         val config = configuration ?: return false
         if (uri == null) return false
         if (uri.scheme == "about") return true
-        return uri.scheme.equals(config.baseUrl.scheme, ignoreCase = true) &&
-            uri.host.equals(config.baseUrl.host, ignoreCase = true) &&
-            normalizedPort(uri) == normalizedPort(config.baseUrl)
+        return isSameOrigin(uri, config.baseUrl)
     }
-
-    private fun normalizedPort(uri: URI): Int =
-        if (uri.port >= 0) uri.port else if (uri.scheme == "https") 443 else 80
 
     private fun handleExternalLink(uri: URI) {
-        if (disposed || isAllowed(uri) || !isAllowedExternalLinkScheme(uri)) return
-        requestExternalLink(uri)
+        if (!isAllowed(uri)) handleOutsideWebView(uri)
     }
 
-    private fun handleDownload(uri: URI) {
+    /** Downloads and new windows never open in the WebView, even for the map origin. */
+    private fun handleOutsideWebView(uri: URI) {
         if (disposed || !isAllowedExternalLinkScheme(uri)) return
         requestExternalLink(uri)
     }
@@ -1053,6 +1207,24 @@ class MetamapsMapView @JvmOverloads constructor(
         }
     }
 
+    private fun applyUserAgent(value: MetamapsMapViewConfiguration) {
+        webView.settings.userAgentString = buildMetamapsUserAgent(
+            defaultUserAgent,
+            MetamapsSdk.VERSION,
+            value.userAgentAppendix,
+        )
+    }
+
+    /** Android cannot reuse a WebView after its renderer ends, so the next [reload] loads into a new one. */
+    private fun replaceWebViewAfterRendererGone() {
+        val gone = webView
+        removeView(gone)
+        gone.destroy()
+        webView = WebView(context)
+        configureWebView()
+        resetPageBridge()
+    }
+
     @SuppressLint("AddJavascriptInterface")
     private fun configureWebView() {
         webView.setBackgroundColor(Color.TRANSPARENT)
@@ -1069,14 +1241,25 @@ class MetamapsMapView @JvmOverloads constructor(
             javaScriptCanOpenWindowsAutomatically = false
             setSupportMultipleWindows(true)
             mediaPlaybackRequiresUserGesture = true
+            // Without an explicit value, Android WebView scales every text by the system font scale, which breaks the
+            // map's fixed-size UI. iOS WKWebView does not follow Dynamic Type either.
+            textZoom = 100
+            // The web map's GPS uses the Geolocation API. MetamapsChromeClient decides each request.
+            setGeolocationEnabled(true)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) safeBrowsingEnabled = true
         }
         webView.addJavascriptInterface(nativeBridge, JS_INTERFACE)
         webView.webViewClient = MetamapsWebViewClient()
         webView.webChromeClient = MetamapsChromeClient()
         webView.setDownloadListener(DownloadListener { url, _, _, _, _ ->
-            runCatching { URI.create(url) }.getOrNull()?.let(::handleDownload)
+            runCatching { URI.create(url) }.getOrNull()?.let(::handleOutsideWebView)
         })
+        configuration?.let(::applyUserAgent)
+        addView(
+            webView,
+            0,
+            LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT),
+        )
     }
 
     internal inner class NativeBridge {
@@ -1088,6 +1271,7 @@ class MetamapsMapView @JvmOverloads constructor(
 
     private inner class MetamapsWebViewClient : WebViewClient() {
         override fun onPageStarted(view: WebView, url: String?, favicon: android.graphics.Bitmap?) {
+            url?.let { runCatching { URI.create(it) }.getOrNull() }?.let { mainFrameUrl = it }
             currentPageFailed = false
             activeLoadAttempt
                 ?.takeIf { it.generation == activeLoadSession?.generation }
@@ -1123,7 +1307,10 @@ class MetamapsMapView @JvmOverloads constructor(
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val uri = runCatching { URI.create(request.url.toString()) }.getOrNull()
                 ?: return request.isForMainFrame
-            if (isAllowed(uri)) return false
+            if (isAllowed(uri)) {
+                if (request.isForMainFrame) mainFrameUrl = uri
+                return false
+            }
             if (request.isForMainFrame) handleExternalLink(uri)
             return request.isForMainFrame
         }
@@ -1155,12 +1342,15 @@ class MetamapsMapView @JvmOverloads constructor(
             error: SslError,
         ) {
             handler.cancel()
+            if (!isMainFrameDocumentUrl(error.url, mainFrameUrl)) return
             handleLoadFailure(
                 sslLoadFailure("TLS validation failed: ${error.primaryError}"),
             )
         }
 
         override fun onRenderProcessGone(view: WebView, detail: RenderProcessGoneDetail): Boolean {
+            if (disposed || view !== webView) return true
+            replaceWebViewAfterRendererGone()
             handleLoadFailure(
                 nonRetryableWebLoadFailure("Android WebView renderer terminated"),
             )
@@ -1169,6 +1359,32 @@ class MetamapsMapView @JvmOverloads constructor(
     }
 
     private inner class MetamapsChromeClient : WebChromeClient() {
+        override fun onGeolocationPermissionsShowPrompt(
+            origin: String?,
+            callback: GeolocationPermissions.Callback?,
+        ) {
+            val baseUrl = configuration?.baseUrl
+            val allow = !disposed && baseUrl != null && shouldGrantWebGeolocation(
+                origin,
+                baseUrl,
+                PermissionRequirements.isGranted(context, Manifest.permission.ACCESS_FINE_LOCATION),
+            )
+            // Do not retain the decision, so a revoked permission or a changed base URL applies to the next request.
+            callback?.invoke(origin, allow, false)
+        }
+
+        /** The web map's voice input asks for the microphone through `webkitSpeechRecognition`. */
+        override fun onPermissionRequest(request: PermissionRequest) {
+            val baseUrl = configuration?.baseUrl
+            val grant = !disposed && baseUrl != null && shouldGrantWebAudioCapture(
+                request.origin?.toString(),
+                request.resources.toList(),
+                baseUrl,
+                PermissionRequirements.isGranted(context, Manifest.permission.RECORD_AUDIO),
+            )
+            if (grant) request.grant(request.resources) else request.deny()
+        }
+
         override fun onCreateWindow(
             view: WebView,
             isDialog: Boolean,
@@ -1176,11 +1392,14 @@ class MetamapsMapView @JvmOverloads constructor(
             resultMsg: Message,
         ): Boolean {
             val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
+            // The popup only captures the URL of the new window and is never attached to a window, so its own
+            // post() queue never runs. Schedule its destruction on the main looper instead.
             val popup = WebView(view.context)
             var handled = false
-            val destroyUnusedPopup = Runnable {
-                if (!handled) {
-                    handled = true
+            var destroyed = false
+            val destroyPopup = Runnable {
+                if (!destroyed) {
+                    destroyed = true
                     popup.destroy()
                 }
             }
@@ -1191,18 +1410,26 @@ class MetamapsMapView @JvmOverloads constructor(
                 ): Boolean {
                     if (!handled) {
                         handled = true
-                        popupView.removeCallbacks(destroyUnusedPopup)
+                        mainHandler.removeCallbacks(destroyPopup)
                         runCatching { URI.create(request.url.toString()) }
                             .getOrNull()
-                            ?.let(::handleExternalLink)
-                        popupView.post { popupView.destroy() }
+                            ?.let(::handleOutsideWebView)
+                        mainHandler.post(destroyPopup)
                     }
+                    return true
+                }
+
+                // The popup shares the renderer with the map. Returning false would let a renderer crash kill the
+                // app even though the map view itself recovers.
+                override fun onRenderProcessGone(popupView: WebView, detail: RenderProcessGoneDetail): Boolean {
+                    mainHandler.removeCallbacks(destroyPopup)
+                    destroyPopup.run()
                     return true
                 }
             }
             transport.webView = popup
             resultMsg.sendToTarget()
-            popup.postDelayed(destroyUnusedPopup, POPUP_DESTROY_FALLBACK_MS)
+            mainHandler.postDelayed(destroyPopup, POPUP_DESTROY_FALLBACK_MS)
             return true
         }
     }

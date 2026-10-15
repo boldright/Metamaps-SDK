@@ -1463,6 +1463,52 @@ class NativeRouteChangedEvent {
   }
 }
 
+class NativeGoBackResult {
+  NativeGoBackResult({required this.wentBack, this.error});
+
+  bool wentBack;
+
+  NativeErrorMessage? error;
+
+  List<Object?> _toList() {
+    return <Object?>[wentBack, error];
+  }
+
+  Object encode() {
+    return _toList();
+  }
+
+  static NativeGoBackResult decode(Object result) {
+    result as List<Object?>;
+    return NativeGoBackResult(
+      wentBack: result[0]! as bool,
+      error: result[1] as NativeErrorMessage?,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! NativeGoBackResult || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(wentBack, other.wentBack) &&
+        _deepEquals(error, other.error);
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => _deepHash(<Object?>[runtimeType, ..._toList()]);
+
+  @override
+  String toString() {
+    return 'NativeGoBackResult(wentBack: $wentBack, error: $error)';
+  }
+}
+
 sealed class NativeEvent {}
 
 class NativePositioningEvent extends NativeEvent {
@@ -1570,6 +1616,7 @@ class NativeMapViewEvent extends NativeEvent {
     this.routeChanged,
     this.externalUrl,
     this.error,
+    this.canGoBack,
   });
 
   int viewId;
@@ -1600,6 +1647,8 @@ class NativeMapViewEvent extends NativeEvent {
 
   NativeErrorMessage? error;
 
+  bool? canGoBack;
+
   List<Object?> _toList() {
     return <Object?>[
       viewId,
@@ -1616,6 +1665,7 @@ class NativeMapViewEvent extends NativeEvent {
       routeChanged,
       externalUrl,
       error,
+      canGoBack,
     ];
   }
 
@@ -1641,6 +1691,7 @@ class NativeMapViewEvent extends NativeEvent {
       routeChanged: result[11] as NativeRouteChangedEvent?,
       externalUrl: result[12] as String?,
       error: result[13] as NativeErrorMessage?,
+      canGoBack: result[14] as bool?,
     );
   }
 
@@ -1666,7 +1717,8 @@ class NativeMapViewEvent extends NativeEvent {
         _deepEquals(spotSelected, other.spotSelected) &&
         _deepEquals(routeChanged, other.routeChanged) &&
         _deepEquals(externalUrl, other.externalUrl) &&
-        _deepEquals(error, other.error);
+        _deepEquals(error, other.error) &&
+        _deepEquals(canGoBack, other.canGoBack);
   }
 
   @override
@@ -1675,7 +1727,7 @@ class NativeMapViewEvent extends NativeEvent {
 
   @override
   String toString() {
-    return 'NativeMapViewEvent(viewId: $viewId, type: $type, ready: $ready, loadState: $loadState, positioningStatus: $positioningStatus, position: $position, capabilities: $capabilities, motionHeading: $motionHeading, beaconSignals: $beaconSignals, floorChanged: $floorChanged, spotSelected: $spotSelected, routeChanged: $routeChanged, externalUrl: $externalUrl, error: $error)';
+    return 'NativeMapViewEvent(viewId: $viewId, type: $type, ready: $ready, loadState: $loadState, positioningStatus: $positioningStatus, position: $position, capabilities: $capabilities, motionHeading: $motionHeading, beaconSignals: $beaconSignals, floorChanged: $floorChanged, spotSelected: $spotSelected, routeChanged: $routeChanged, externalUrl: $externalUrl, error: $error, canGoBack: $canGoBack)';
   }
 }
 
@@ -1749,11 +1801,14 @@ class _PigeonCodec extends StandardMessageCodec {
     } else if (value is NativeRouteChangedEvent) {
       buffer.putUint8(149);
       writeValue(buffer, value.encode());
-    } else if (value is NativePositioningEvent) {
+    } else if (value is NativeGoBackResult) {
       buffer.putUint8(150);
       writeValue(buffer, value.encode());
-    } else if (value is NativeMapViewEvent) {
+    } else if (value is NativePositioningEvent) {
       buffer.putUint8(151);
+      writeValue(buffer, value.encode());
+    } else if (value is NativeMapViewEvent) {
+      buffer.putUint8(152);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -1806,8 +1861,10 @@ class _PigeonCodec extends StandardMessageCodec {
       case 149:
         return NativeRouteChangedEvent.decode(readValue(buffer)!);
       case 150:
-        return NativePositioningEvent.decode(readValue(buffer)!);
+        return NativeGoBackResult.decode(readValue(buffer)!);
       case 151:
+        return NativePositioningEvent.decode(readValue(buffer)!);
+      case 152:
         return NativeMapViewEvent.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -2320,6 +2377,27 @@ class MetamapsHostApi {
       isNullValid: false,
     );
     return pigeonVar_replyValue! as NativeOperationResult;
+  }
+
+  Future<NativeGoBackResult> goBackMapView(int viewId) async {
+    final pigeonVar_channelName =
+        'dev.flutter.pigeon.metamaps_flutter.MetamapsHostApi.goBackMapView$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(
+      <Object?>[viewId],
+    );
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+
+    final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(
+      pigeonVar_replyList,
+      pigeonVar_channelName,
+      isNullValid: false,
+    );
+    return pigeonVar_replyValue! as NativeGoBackResult;
   }
 }
 

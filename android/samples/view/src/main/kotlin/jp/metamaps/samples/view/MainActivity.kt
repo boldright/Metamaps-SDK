@@ -1,9 +1,10 @@
 package jp.metamaps.samples.view
 
-import android.app.Activity
 import android.os.Bundle
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import jp.metamaps.MetamapsError
 import jp.metamaps.mapview.MetamapsExternalLinkDecision
 import jp.metamaps.mapview.MetamapsMapView
@@ -16,7 +17,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 /** A minimal map-only integration with the Android View API. It declares no location or Bluetooth permissions. */
-class MainActivity : Activity() {
+class MainActivity : ComponentActivity() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private lateinit var mapView: MetamapsMapView
     private lateinit var status: TextView
@@ -55,6 +56,15 @@ class MainActivity : Activity() {
             )
         }
         setContentView(layout)
+        // Back first closes what the map opened, such as a spot, as the browser's back button does on the web.
+        // Once the map has nothing to close, back leaves this activity as usual.
+        val mapBack = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                mapView.goBack()
+            }
+        }
+        onBackPressedDispatcher.addCallback(this, mapBack)
+        scope.launch { mapView.canGoBack.collect { mapBack.isEnabled = it } }
         scope.launch {
             try {
                 mapView.load()

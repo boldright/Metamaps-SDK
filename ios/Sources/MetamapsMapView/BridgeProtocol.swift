@@ -54,8 +54,9 @@ struct BridgeEnvelope: Codable, Equatable, Sendable {
         groupId: UUID? = nil,
         sequence: Int64,
         payload: BridgeJSONValue? = nil,
-        // The generation that includes `bridge.hello.payload.automaticPositioning` for automatic positioning.
-        bridgeVersion: String = "1.4"
+        // The generation that adds back navigation (`map.canGoBackChanged`, `map.goBack`). The share sheet of the
+        // same generation is Android only: WKWebView opens the OS share sheet through Web Share by itself.
+        bridgeVersion: String = "1.6"
     ) {
         schema = Self.schema
         self.bridgeVersion = bridgeVersion
@@ -71,6 +72,12 @@ struct BridgeEnvelope: Codable, Equatable, Sendable {
         guard case .object(let object) = payload, case .string(let code) = object["code"],
               code.range(of: #"^[a-z0-9_]{1,64}\z"#, options: .regularExpression) != nil else { return "unknown" }
         return code
+    }
+
+    /// The value of a `map.canGoBackChanged` event, or `nil` when the payload has no boolean value.
+    var canGoBack: Bool? {
+        guard case .object(let object) = payload, case .bool(let value) = object["canGoBack"] else { return nil }
+        return value
     }
 
     /// The host error for a `map.error` event. The web map stays usable, so the error is recoverable and asks the

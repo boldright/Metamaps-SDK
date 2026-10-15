@@ -62,23 +62,37 @@ remove `ACCESS_COARSE_LOCATION`, `BLUETOOTH`, and `BLUETOOTH_ADMIN`, which the A
 removal can also apply to the same permissions declared by other libraries, so if another library needs any of
 them, declare it in your app's manifest; your app's own declarations always take priority.
 
+Maps that show the user's location with GPS need precise location permission. The map view lets the map read the
+device location only when your app has already been granted `ACCESS_FINE_LOCATION`, and it never shows a permission
+dialog for this. To use GPS location in the map, declare `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` and
+request them from your app.
+
+Voice input in the map works the same way with `RECORD_AUDIO`: declare and request it from your app to show the
+map's microphone button. The SDK adds a `<queries>` entry for the speech recognition service to the merged
+manifest.
+
 ## Map view
 
 ```kotlin
+import androidx.lifecycle.lifecycleScope
 import jp.metamaps.mapview.MetamapsMapView
 import jp.metamaps.mapview.MetamapsMapViewConfiguration
+import kotlinx.coroutines.launch
 
 val mapView = MetamapsMapView(context).apply {
     configure(MetamapsMapViewConfiguration(mapSlug = "example", language = "en"))
     eventListener = ::handleMapEvent
 }
-mapView.load()
+// load() is a suspend function; call it from a coroutine on the main thread.
+lifecycleScope.launch { mapView.load() }
 ```
 
 Only `mapSlug` is required; the production base URL is `https://metamaps.jp`. Optional settings include
 `groupId`, `language`, `initialFloorId`, and `previewToken`, a short-lived token that shows an unpublished map. The
 view provides `load()` / `reload()`, `selectFloor()`, `showSpot()`, `setDestination()`, `setLanguage()`, the
-center reticle and its candidate coordinate, `dispose()`, and typed events as a `SharedFlow`.
+center reticle and its candidate coordinate, `canGoBack` and `goBack()` for the back button, `dispose()`, and typed
+events as a `SharedFlow`. Connect `canGoBack` and `goBack()` to an `OnBackPressedCallback` so that back closes an open
+spot before it leaves your screen; the samples show how. The map's share buttons open the Android share sheet.
 
 The web view rejects main-frame navigation and bridge messages from any origin other than the configured one, and
 validates the document token, the bridge major version, the map and group, and a monotonically increasing sequence

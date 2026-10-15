@@ -1,5 +1,81 @@
 # Changelog
 
+## 0.7.0
+
+The embedded map now behaves like the web map in a browser: back navigation, the share sheet, voice input, GPS
+location, and embedded videos. This version also fixes several WebView lifecycle issues. Playing the voice guide in
+the background is not part of this version.
+
+### Breaking changes
+
+- All platforms: Map view events have a new case for back navigation: Android
+  `MetamapsMapViewEvent.CanGoBackChanged`, iOS `.canGoBackChanged`, and Flutter `MapCanGoBackChanged`. A `when` or
+  `switch` without a default branch no longer compiles. Add a default branch, as the guides show.
+- Android: The map's text no longer follows the system font size. The map view fixes the WebView text zoom at 100%,
+  as iOS already did.
+- Android: `MetamapsMapView.webView` is replaced with a new instance after the WebView renderer process ends. Read the
+  property when you need it instead of keeping a reference. The property stays source- and binary-compatible.
+- Android: `requestCenterReticleCandidate()` now fails with `MetamapsError` (`BRIDGE_HANDSHAKE_FAILED`) instead of
+  `CancellationException` when the page changes or the view is disposed, as on iOS.
+- Android: Passing `null` as the Activity to `requestPositioningAuthorization()` or `startPositioning()` now falls back
+  to the view's own Activity instead of failing with `LOCATION_PERMISSION_DENIED`.
+- iOS: `dispose()` during a load now ends `load()` with `CancellationError` instead of `webContentLoadFailed`.
+
+### Changes
+
+- All platforms: Back navigation follows the web map. `canGoBack` (Android `StateFlow<Boolean>`, an iOS property, and
+  `MetamapsMapViewController.canGoBack` in Flutter) tells whether back should close a step of the map, such as an
+  open spot, and `goBack()` closes it. Connect them to an `OnBackPressedCallback` on Android, `PopScope` in Flutter,
+  or your own back control on iOS. Without this, Android's back button closes your screen even while a spot is open.
+- Android: The map's share buttons open the Android share sheet. Your app needs no code for this.
+- Android: GPS location in the map works when your app holds `ACCESS_FINE_LOCATION`. The map view grants the map's
+  location request only for the configured HTTPS origin and never shows a permission dialog itself.
+- Android: Voice input in the map's search field and AI chat works when your app holds `RECORD_AUDIO`. The map hides
+  its microphone button while voice input is unavailable. The library's manifest adds a `<queries>` entry for
+  `android.speech.RecognitionService`; it adds no permissions.
+- iOS 27 and later: The map view grants the map's location request for the configured HTTPS origin, so WebKit no
+  longer shows its own per-site prompt. iOS still asks for location permission the first time.
+- iOS: Embedded HTTPS content in spot descriptions, such as YouTube videos, now loads instead of staying blank. The
+  page itself stays on the configured origin, and only the map's page can use the bridge.
+- iOS / Android: Links that open a new window on the map's own origin, such as the privacy policy link, now open
+  outside the map view through `decideExternalLink` / `externalLinkHandler`. Previously nothing happened. On iOS, new
+  windows to other origins that the map does not route itself also open outside.
+- Flutter: `MetamapsMapViewController.canGoBack`, `goBack()`, and `MapCanGoBackChanged`. The example connects them to
+  `PopScope`.
+- Samples: The Android view sample uses `OnBackPressedCallback` from `androidx.activity`, and the Compose sample uses
+  `BackHandler`.
+- The developer guides cover the permissions each feature needs, back navigation, recovery with `reload()` after a
+  failure, and the iOS navigation-bar back button.
+
+### Bug fixes
+
+- Android: A TLS error on a subresource, such as an image, no longer fails the whole map.
+- Android: After the WebView renderer process ends, `reload()` recovers the map.
+- Android: Fixed a leak, and a possible crash, of the temporary WebView used for links that open a new window.
+- Android: Fixed a possible crash when the page URL contains characters that `java.net.URI` rejects.
+- Android: Calling `configure()` again on a loaded view no longer leaves `canGoBack` set or requests waiting.
+- Android: `dispose()` detaches the WebView before destroying it.
+- iOS / Android: A positioning manifest from an older map revision no longer blocks the map. Host commands and back
+  navigation work. Positioning stops until the map view prepares the manifest of the current revision, without an
+  error for every position update.
+- iOS: After `reload()`, a message from the previous page no longer completes the handshake of the new page.
+- iOS: Fixed a possible crash on a bridge message that is not a JSON object.
+- iOS: The map view now completes its handshake even when the map announces itself before the page finishes loading.
+- iOS: After the web content process ends, host commands fail until `reload()` instead of being dropped.
+- iOS: Messages from embedded frames no longer produce `.error` events.
+- iOS: `dispose()` pauses the page's audio.
+- Flutter (Android): `requestCenterReticleCandidate()` and the positioning calls always complete. Some could wait
+  forever after the page changed.
+- Flutter: `canGoBack` becomes `false` when the widget is disposed.
+
+### Changes in the hosted map
+
+These apply to every SDK version, including 0.6.0, because the map is served by Metamaps:
+
+- The voice guide pauses when your app moves to the background or the screen locks, and does not resume on its own.
+  Playing it in the background is planned for a later SDK version.
+- On Android map views from SDK 0.6.0 and earlier, the map hides its microphone button, which could not work there.
+
 ## 0.6.0
 
 The Metamaps SDK is a map SDK. Indoor positioning is an optional feature for facilities with installed beacons.

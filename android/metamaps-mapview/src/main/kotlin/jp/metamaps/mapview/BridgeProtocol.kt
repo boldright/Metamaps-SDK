@@ -1,5 +1,6 @@
 package jp.metamaps.mapview
 
+import java.net.URI
 import java.util.UUID
 import jp.metamaps.MetamapsError
 import jp.metamaps.MetamapsUserAction
@@ -35,10 +36,36 @@ internal data class BridgeEnvelope(
             "map.error: $mapErrorCode",
         )
 
+    /** The value of a `map.canGoBackChanged` event, or `null` when the payload has no boolean value. */
+    val canGoBack: Boolean?
+        get() = payload?.get("canGoBack") as? Boolean
+
+    /**
+     * The Web Share data of a `map.share` request, or `null` when it cannot be shared. The URL must be an absolute HTTP
+     * or HTTPS URL of up to 2,048 characters, and the text up to 1,000 characters.
+     */
+    val shareRequest: MapShareRequest?
+        get() {
+            val rawUrl = payload?.get("url") as? String ?: return null
+            if (rawUrl.length > MAX_SHARE_URL_LENGTH) return null
+            val url = runCatching { URI.create(rawUrl) }.getOrNull() ?: return null
+            val text = payload["text"]
+            if (url.scheme?.lowercase() !in SHARE_URL_SCHEMES ||
+                url.host.isNullOrEmpty() ||
+                (text != null && (text !is String || text.length > MAX_SHARE_TEXT_LENGTH))
+            ) {
+                return null
+            }
+            return MapShareRequest(url, text as String?)
+        }
+
     companion object {
         const val SCHEMA = "metamap.native-bridge.v1"
         private val VERSION = Regex("1\\.\\d+")
         private val MAP_ERROR_CODE = Regex("[a-z0-9_]{1,64}")
+        private const val MAX_SHARE_URL_LENGTH = 2048
+        private const val MAX_SHARE_TEXT_LENGTH = 1000
+        private val SHARE_URL_SCHEMES = setOf("http", "https")
 
         fun parse(json: String): BridgeEnvelope {
             val value = JSONObject(json)
@@ -62,6 +89,16 @@ internal data class BridgeEnvelope(
             )
         }
     }
+}
+
+/** The Web Share data of a `map.share` request, which the map view passes to the OS share sheet. */
+internal data class MapShareRequest(
+    val url: URI,
+    val text: String?,
+) {
+    /** The shared text: the Web Share title and the URL on separate lines, or the URL alone. */
+    val body: String
+        get() = if (text.isNullOrEmpty()) url.toString() else "$text\n$url"
 }
 
 internal data class BridgeReadyContext(
@@ -168,8 +205,9 @@ internal object BridgeJson {
         payload: Any?,
     ): String = JSONObject().apply {
         put("schema", BridgeEnvelope.SCHEMA)
-        // The generation that includes `bridge.hello.payload.automaticPositioning` for automatic positioning.
-        put("bridgeVersion", "1.4")
+        // The generation that adds back navigation (`map.canGoBackChanged`, `map.goBack`) and the share sheet
+        // (`bridge.hello.payload.share`, `map.share`).
+        put("bridgeVersion", "1.6")
         put("type", type)
         if (mapId != null) put("mapId", mapId.toString().lowercase())
         if (groupId != null) put("groupId", groupId.toString().lowercase())

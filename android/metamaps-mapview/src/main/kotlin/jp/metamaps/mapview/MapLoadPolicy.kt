@@ -1,5 +1,6 @@
 package jp.metamaps.mapview
 
+import java.net.URI
 import jp.metamaps.MetamapsError
 import jp.metamaps.MetamapsUserAction
 
@@ -66,6 +67,16 @@ internal fun mapLoadRetryDelayMillis(failureIndex: Int): Long = when (failureInd
 
 internal fun shouldInitialDocumentRequestTimeout(responseObserved: Boolean): Boolean =
     !responseObserved
+
+/**
+ * Whether [url] names the main frame document at [mainFrame], ignoring the query and fragment. Android reports TLS
+ * errors for subresources through the same callback as the main frame, and only the main frame fails the load.
+ */
+internal fun isMainFrameDocumentUrl(url: String?, mainFrame: URI?): Boolean {
+    if (mainFrame == null) return false
+    val uri = url?.let { runCatching { URI.create(it) }.getOrNull() } ?: return false
+    return isSameOrigin(uri, mainFrame) && uri.path.orEmpty() == mainFrame.path.orEmpty()
+}
 
 private fun mapLoadFailure(
     code: MetamapsError.Code,

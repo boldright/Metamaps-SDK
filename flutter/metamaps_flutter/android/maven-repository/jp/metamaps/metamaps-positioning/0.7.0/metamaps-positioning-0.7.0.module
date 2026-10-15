@@ -1,0 +1,131 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "jp.metamaps",
+    "module": "metamaps-positioning",
+    "version": "0.7.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.8.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "jp.metamaps",
+          "module": "metamaps-positioning-core",
+          "version": {
+            "requires": "0.7.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.11.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.4.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "metamaps-positioning-0.7.0.aar",
+          "url": "metamaps-positioning-0.7.0.aar",
+          "size": 192286,
+          "sha512": "cc1cf06351387437fa5aca107fa6256a289a14a0a05fb116ad78192bd0acb715af26c407b83c1f9217a78247a7325e7965a76fdee68365d8928523401a8171e0",
+          "sha256": "f78feb9706828a5fa7e7ba36d96bdba2978a9f57f91c09a020fd15f6129d2308",
+          "sha1": "63795b66723eddd8a6e8ada8103b3e26c6ee1bcf",
+          "md5": "f734420e6b022d33186750fea57679d2"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "org.altbeacon",
+          "module": "android-beacon-library",
+          "version": {
+            "requires": "2.21.2"
+          }
+        },
+        {
+          "group": "jp.metamaps",
+          "module": "metamaps-positioning-core",
+          "version": {
+            "requires": "0.7.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlinx",
+          "module": "kotlinx-coroutines-android",
+          "version": {
+            "requires": "1.11.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.4.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "metamaps-positioning-0.7.0.aar",
+          "url": "metamaps-positioning-0.7.0.aar",
+          "size": 192286,
+          "sha512": "cc1cf06351387437fa5aca107fa6256a289a14a0a05fb116ad78192bd0acb715af26c407b83c1f9217a78247a7325e7965a76fdee68365d8928523401a8171e0",
+          "sha256": "f78feb9706828a5fa7e7ba36d96bdba2978a9f57f91c09a020fd15f6129d2308",
+          "sha1": "63795b66723eddd8a6e8ada8103b3e26c6ee1bcf",
+          "md5": "f734420e6b022d33186750fea57679d2"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "metamaps-positioning-0.7.0-sources.jar",
+          "url": "metamaps-positioning-0.7.0-sources.jar",
+          "size": 29455,
+          "sha512": "ddf25fd4b4552a6f511ec76944e23d3ebe1dbfbf72ad01294f0cb75b485a389e45f5a0a68f8797db1f0cafd7bc424b271630959e73811c12a83cc3309369f6d5",
+          "sha256": "6cdbd822c61519ba14dc74e35d541a4e9a2519dbffd78770169870ef6dad04f7",
+          "sha1": "444f30a1b11e24e4814995b11b4c350355daaaa4",
+          "md5": "a0502adbfbf8bba060ed122b7e6e605c"
+        }
+      ]
+    }
+  ]
+}

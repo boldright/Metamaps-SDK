@@ -277,6 +277,12 @@ extension MetamapsMapViewEvent {
         type: "externalLinkRequested",
         externalUrl: url.absoluteString
       )
+    case .canGoBackChanged(let canGoBack):
+      return NativeMapViewEvent(
+        viewId: viewId,
+        type: "canGoBackChanged",
+        canGoBack: canGoBack
+      )
     case .error(let error):
       return NativeMapViewEvent(
         viewId: viewId,

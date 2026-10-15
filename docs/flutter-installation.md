@@ -18,7 +18,7 @@ mkdir -p vendor
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v0.6.0`.
+To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v0.7.0`.
 
 Because the directory name is fixed, an SDK update only replaces this directory; `pubspec.yaml` and
 `build.gradle.kts` stay unchanged. Step 11 describes the update.
@@ -124,10 +124,11 @@ class _MapScreenState extends State<MapScreen> {
             if (event is MapReady) {
               _updateMapReady(true);
             } else if (event is MapLoadStateChanged &&
-                event.state == MapViewLoadState.loading) {
+                event.state != MapViewLoadState.loaded) {
+              // Commands fail again from a new page load, a failure, or disposal until the next MapReady.
               _updateMapReady(false);
             } else if (event case MapViewErrorEvent()) {
-              // Show your recovery UI.
+              // Show your recovery UI. After MapLoadStateChanged(failed), call reload() to recover.
             } else {
               // Keep this branch: SDK updates may add events.
             }
@@ -165,6 +166,29 @@ it does not add location, Bluetooth, or activity recognition permissions. The SD
 The removal can also apply to the same permissions declared by other libraries in your app, so if another library
 needs any of them, declare it in your app's manifest; your app's own declarations always take priority.
 
+On Android, maps that show the user's location with GPS need precise location permission. The map view lets the
+map read the device location only when your app has already been granted `ACCESS_FINE_LOCATION`, and it never shows
+a permission dialog for this. To use GPS location in the map, declare `ACCESS_FINE_LOCATION` and
+`ACCESS_COARSE_LOCATION` in your manifest and request them from your app. Without the permission, the map tells the
+user that location is not available.
+
+The plugin has no API for these Android permissions. Request them with your app's own permission flow, for example
+the `permission_handler` package.
+
+On Android, voice input in the map's search field and AI chat needs microphone permission. The map view lets the
+map use the microphone only when your app has already been granted `RECORD_AUDIO`, and it never shows a permission
+dialog for this. To offer voice input, declare `RECORD_AUDIO` in `android/app/src/main/AndroidManifest.xml` and
+request it from your app. Without the permission, or on a device without a speech recognition service, the map
+hides its microphone button; after the user grants the permission, the button appears without reloading the map.
+Voice input uses the device's speech recognition service, which can send the audio to a server, so cover the
+microphone in your privacy policy. The SDK adds a `<queries>` entry for `android.speech.RecognitionService` to your
+merged manifest so that the map can reach that service on Android 11 and later. The map's text does not follow the
+system font size on either platform.
+
+```xml
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
 On iOS, add these four keys to `ios/Runner/Info.plist`, even if you only show maps:
 
 ```xml
@@ -173,14 +197,17 @@ On iOS, add these four keys to `ios/Runner/Info.plist`, even if you only show ma
 <key>NSSpeechRecognitionUsageDescription</key>
 <string>Speech recognition turns your voice into map searches and questions.</string>
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>Nearby beacons are used to show your location and routes inside the building.</string>
+<string>Your location is used to show where you are on the map and to find routes.</string>
 <key>NSMotionUsageDescription</key>
 <string>Motion data keeps your location up to date while you walk.</string>
 ```
 
-The microphone and speech recognition keys are used by the map's voice input. The location and motion keys are
-used only by indoor positioning (step 9); App Store Connect still checks for them because the SDK links Core
-Location and Core Motion, and the system never shows these prompts unless positioning starts.
+The microphone and speech recognition keys are used by the map's voice input. The location key is used when the
+map shows the user's location: by GPS location on maps that enable it, and by indoor positioning (step 9). On a map
+with GPS location enabled, the system asks for location permission the first time the user taps the location button
+in the map, even in an app that only shows maps. The motion key is used only by indoor positioning, and the system
+asks for it only when positioning starts. App Store Connect checks for the location and motion keys because the SDK
+links Core Location and Core Motion.
 
 Your IDE's hover documentation, or `dart doc` run in the plugin directory, shows the public API documentation.
 
@@ -195,6 +222,43 @@ Your IDE's hover documentation, or `dart doc` run in the plugin directory, shows
 
 `onViewCreated` reports that the controller exists, but the web map may not be ready yet. Wait for `MapReady`
 before calling controller methods that control the displayed map.
+
+### Back button
+
+When the user opens a spot, the map adds a step to its history, as the web map does in a browser. Wrap the map's
+screen in `PopScope` so that back closes that step first and leaves the screen only when the map has nothing to
+close. `MetamapsMapViewController.canGoBack` is `true` while the map has such a step, `MapCanGoBackChanged` reports
+its changes, and `goBack()` closes the step:
+
+```dart
+import 'dart:async'; // For unawaited.
+
+@override
+Widget build(BuildContext context) {
+  return PopScope(
+    canPop: !(_mapController?.canGoBack ?? false),
+    onPopInvokedWithResult: (didPop, _) {
+      // goBack() fails only when the native view is already gone; there is nothing left to close then.
+      if (!didPop) unawaited(_mapController?.goBack().catchError((Object _) => false));
+    },
+    child: MetamapsMapView(
+      configuration: MetamapsMapViewConfiguration(mapSlug: 'example'),
+      onViewCreated: (controller) => _mapController = controller,
+      onEvent: (event) {
+        // Rebuild so that PopScope reads the new canGoBack.
+        if (event is MapCanGoBackChanged) setState(() {});
+      },
+    ),
+  );
+}
+```
+
+On iOS, Flutter also disables the back swipe while `canPop` is `false`; the swipe works again once the map has
+nothing to close.
+
+### Sharing
+
+The map's share buttons open the system share sheet on both platforms. Your app needs no code for this.
 
 ## 7. Change the display language
 
@@ -305,8 +369,9 @@ flutter build ios --simulator --debug
 ## 11. Update the SDK
 
 Check out the new version in your clone of the public repository and replace the whole `vendor/metamaps-flutter/`
-directory. Do not change your app's `pubspec.yaml`, `android/build.gradle.kts`, `android/settings.gradle.kts`,
-`Info.plist`, `AndroidManifest.xml`, or your code.
+directory. Replacing the directory needs no change to your app's `pubspec.yaml`, `android/build.gradle.kts`, or
+`android/settings.gradle.kts`. Read the changelog for anything a new version asks of your app, such as new
+permissions in `AndroidManifest.xml` or `Info.plist`, or the `PopScope` handling for back.
 
 ```bash
 git -C ../Metamaps-SDK fetch --tags
@@ -315,7 +380,7 @@ rm -rf vendor/metamaps-flutter
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-Replace `<version>` with the version to install, for example `0.6.0`.
+Replace `<version>` with the version to install, for example `0.7.0`.
 
 **Do not skip `rm -rf`.** If `vendor/metamaps-flutter` still exists, `cp -R` copies the new directory **into** it.
 Flutter then keeps reading the old `vendor/metamaps-flutter/pubspec.yaml`, `android/`, and `ios/`, and the build

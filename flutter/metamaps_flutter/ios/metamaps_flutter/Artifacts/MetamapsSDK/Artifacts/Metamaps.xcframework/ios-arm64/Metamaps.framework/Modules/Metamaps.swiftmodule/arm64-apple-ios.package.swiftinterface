@@ -132,6 +132,7 @@ public enum MetamapsMapViewEvent : Swift::Sendable {
   case spotSelected(Metamaps::SpotSelectedEvent)
   case routeChanged(Metamaps::RouteChangedEvent)
   case externalLinkRequested(Foundation::URL)
+  case canGoBackChanged(Swift::Bool)
   case error(MetamapsPositioning::MetamapsError)
 }
 @_Concurrency::MainActor public protocol MetamapsMapViewDelegate : AnyObject {
@@ -147,6 +148,9 @@ extension Metamaps::MetamapsMapViewDelegate {
   @_Concurrency::MainActor final public var loadState: Metamaps::MapViewLoadState {
     get
   }
+  @_Concurrency::MainActor final public var canGoBack: Swift::Bool {
+    get
+  }
   @_Concurrency::MainActor final public let webView: WebKit::WKWebView
   @_Concurrency::MainActor public init(configuration: Metamaps::MetamapsMapViewConfiguration)
   @_Concurrency::MainActor final public func load() async throws
@@ -160,6 +164,8 @@ extension Metamaps::MetamapsMapViewDelegate {
   @_Concurrency::MainActor final public func showSpot(_ spotId: Swift::String) throws
   @_Concurrency::MainActor final public func setDestination(_ spotId: Swift::String?) throws
   @_Concurrency::MainActor final public func setLanguage(_ language: Swift::String) throws
+  @discardableResult
+  @_Concurrency::MainActor final public func goBack() -> Swift::Bool
   @_Concurrency::MainActor final public func setCenterReticleEnabled(_ enabled: Swift::Bool) throws
   @_spi(MetamapsInternal) @_Concurrency::MainActor final public func sendInternalBridgeCommand<Payload>(_ type: Swift::String, payload: Payload) throws where Payload : Swift::Encodable
   @_Concurrency::MainActor final public func requestCenterReticleCandidate() async throws -> Metamaps::MapCenterReticleCandidate?
@@ -168,7 +174,9 @@ extension Metamaps::MetamapsMapViewDelegate {
 }
 extension Metamaps::MetamapsMapView : WebKit::WKNavigationDelegate, WebKit::WKUIDelegate {
   @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, requestMediaCapturePermissionFor origin: WebKit::WKSecurityOrigin, initiatedByFrame frame: WebKit::WKFrameInfo, type: WebKit::WKMediaCaptureType, decisionHandler: @escaping @_Concurrency::MainActor @Sendable (WebKit::WKPermissionDecision) -> Swift::Void)
+  @objc(webView:requestGeolocationPermissionForOrigin:initiatedByFrame:decisionHandler:) @_Concurrency::MainActor @preconcurrency final public func webView(_ webView: WebKit::WKWebView, requestGeolocationPermissionFor origin: WebKit::WKSecurityOrigin, initiatedByFrame frame: WebKit::WKFrameInfo, decisionHandler: @escaping @_Concurrency::MainActor @Sendable (WebKit::WKPermissionDecision) -> Swift::Void)
   @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didStartProvisionalNavigation navigation: WebKit::WKNavigation!)
+  @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didCommit navigation: WebKit::WKNavigation!)
   @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didFinish navigation: WebKit::WKNavigation!)
   @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didFail navigation: WebKit::WKNavigation!, withError error: any Swift::Error)
   @_Concurrency::MainActor @preconcurrency @objc final public func webView(_ webView: WebKit::WKWebView, didFailProvisionalNavigation navigation: WebKit::WKNavigation!, withError error: any Swift::Error)

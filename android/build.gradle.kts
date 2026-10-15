@@ -12,7 +12,7 @@ plugins {
 }
 
 group = "jp.metamaps"
-version = "0.6.0"
+version = "0.7.0"
 
 
 // Release report tasks read the projects only while they are configured. Their actions use the captured values, so

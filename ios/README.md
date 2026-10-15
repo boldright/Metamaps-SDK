@@ -43,15 +43,17 @@ Add these purpose strings to `Info.plist`, even if you only show maps:
 <key>NSSpeechRecognitionUsageDescription</key>
 <string>Speech recognition turns your voice into map searches and questions.</string>
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>Nearby beacons are used to show your location and routes inside the building.</string>
+<string>Your location is used to show where you are on the map and to find routes.</string>
 <key>NSMotionUsageDescription</key>
 <string>Motion data keeps your location up to date while you walk.</string>
 ```
 
-The microphone and speech recognition keys are used by the map's voice input. The location and motion keys are
-used only by indoor positioning; App Store Connect checks for them because the SDK links Core Location and Core
-Motion, and the system never shows those prompts unless positioning starts. The SDK does not use Core Bluetooth
-directly, so it does not need `NSBluetoothAlwaysUsageDescription`.
+The microphone and speech recognition keys are used by the map's voice input. The location key is used when the
+map shows the user's location: by GPS location on maps that enable it, and by indoor positioning. On a map with GPS
+location enabled, the system asks for location permission the first time the user taps the location button in the
+map. The motion key is used only by indoor positioning, and the system asks for it only when positioning starts.
+App Store Connect checks for the location and motion keys because the SDK links Core Location and Core Motion. The
+SDK does not use Core Bluetooth directly, so it does not need `NSBluetoothAlwaysUsageDescription`.
 
 ## Map view
 
@@ -67,14 +69,17 @@ try await mapView.load()
 Only `mapSlug` is required; the production base URL is `https://metamaps.jp`. Optional settings include
 `groupId`, `language`, `initialFloorId`, and `previewToken`, a short-lived token that shows an unpublished map. The
 view provides `load()` / `reload()`, `selectFloor(_:)`, `showSpot(_:)`, `setDestination(_:)`, `setLanguage(_:)`,
-the center reticle and its candidate coordinate, `dispose()`, and typed events.
+the center reticle and its candidate coordinate, `canGoBack` and `goBack()` for your own back control, `dispose()`,
+and typed events.
 
 `dispose()` is a `@MainActor` API. Call it from UIKit's `viewDidDisappear` or from an explicit screen-closing
 action in SwiftUI, not from a nonisolated `deinit`. The developer guide has a minimal example with cancellation and
 dismissal checks.
 
-The web view rejects navigation and bridge messages from any origin other than the configured one, and validates
-the bridge major version, the map and group, and a monotonically increasing sequence number. Long-lived tokens
+The web view keeps its page on the configured origin and accepts bridge messages only from that page, validating
+the bridge major version, the map and group, and a monotonically increasing sequence number. Embedded https content,
+such as YouTube videos in spot descriptions, loads inside the page; other links and new windows open outside the
+web view. Long-lived tokens
 and secrets are never passed to JavaScript. The IDs passed to `showSpot(_:)` and `setDestination(_:)` are the
 stable keys of public spots, such as `6Y6SSBY5` (keys in the older `spot_` format are also accepted).
 

@@ -31,6 +31,7 @@ abstract interface class NativeGateway {
     int viewId,
   );
   Future<void> openMapViewExternalLink(int viewId, String url);
+  Future<bool> goBackMapView(int viewId);
 }
 
 final class PigeonNativeGateway implements NativeGateway {
@@ -166,6 +167,13 @@ final class PigeonNativeGateway implements NativeGateway {
   @override
   Future<void> openMapViewExternalLink(int viewId, String url) =>
       _operation(_api.openMapViewExternalLink(viewId, url));
+
+  @override
+  Future<bool> goBackMapView(int viewId) async {
+    final result = await _api.goBackMapView(viewId);
+    _throwIfError(result.error);
+    return result.wentBack;
+  }
 
   Future<void> _operation(Future<NativeOperationResult> future) async {
     final result = await future;
@@ -335,6 +343,9 @@ MetamapsMapViewEvent mapMapViewEvent(NativeMapViewEvent event) {
     ),
     'externalLinkRequested' when event.externalUrl != null =>
       MapExternalLinkRequested(Uri.parse(event.externalUrl!)),
+    'canGoBackChanged' when event.canGoBack != null => MapCanGoBackChanged(
+      event.canGoBack!,
+    ),
     'error' when event.error != null => MapViewErrorEvent(
       mapNativeError(event.error!),
     ),

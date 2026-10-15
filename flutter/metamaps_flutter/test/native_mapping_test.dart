@@ -54,6 +54,23 @@ void main() {
     },
   );
 
+  test('maps the back state that PopScope follows', () {
+    expect(
+      mapMapViewEvent(
+        NativeMapViewEvent(
+          viewId: 1,
+          type: 'canGoBackChanged',
+          canGoBack: true,
+        ),
+      ),
+      isA<MapCanGoBackChanged>().having(
+        (e) => e.canGoBack,
+        'canGoBack',
+        isTrue,
+      ),
+    );
+  });
+
   test('maps unknown native enums to public unknown cases', () {
     final report = mapCapabilityReport(
       NativeCapabilityReport(

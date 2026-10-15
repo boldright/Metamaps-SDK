@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:metamaps_flutter/metamaps_flutter.dart';
 
@@ -42,6 +44,19 @@ class _MapScreenState extends State<MapScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Back first closes what the map opened, such as a spot, as the browser's back button does on the web.
+    // Once the map has nothing to close, back leaves this screen as usual.
+    return PopScope(
+      canPop: !(_controller?.canGoBack ?? false),
+      onPopInvokedWithResult: (didPop, _) {
+        // goBack() fails only when the native view is already gone, and then there is nothing left to close.
+        if (!didPop) unawaited(_controller?.goBack().catchError((Object _) => false));
+      },
+      child: _buildMap(),
+    );
+  }
+
+  Widget _buildMap() {
     // The map view is an ordinary widget. Here it fills the screen, but it can also sit in a tab, a sheet, or
     // part of a layout, as long as it gets a bounded size.
     return Scaffold(
@@ -69,6 +84,9 @@ class _MapScreenState extends State<MapScreen> {
     switch (event) {
       case MapReady():
         debugPrint('Map ready: ${event.event.mapId}');
+      case MapCanGoBackChanged():
+        // Rebuild so that PopScope reads the new controller.canGoBack.
+        setState(() {});
       case MapViewErrorEvent():
         _showError(event.error);
       // This example does not use the other events, such as MapSpotSelected and MapFloorChanged.

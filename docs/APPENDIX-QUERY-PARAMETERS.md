@@ -30,7 +30,7 @@ editor of the facility settings.
 
 The parameters in this appendix are the full public contract.
 
-With `from=gps`, the origin is filled in once positioning has a fix. To leave the origin unset, omit `from`.
+With `from=gps`, the origin is filled in once positioning has a fix. GPS needs the location permission described in your platform's installation guide. To leave the origin unset, omit `from`.
 
 ## Changing the view after it is displayed
 

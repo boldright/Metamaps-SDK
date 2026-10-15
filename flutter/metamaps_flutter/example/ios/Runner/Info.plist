@@ -31,7 +31,7 @@
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>Speech recognition turns your voice into map searches and questions.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Nearby beacons are used to show your location and routes inside the building.</string>
+	<string>Your location is used to show where you are on the map and to find routes.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Motion data keeps your location up to date while you walk.</string>
 	<key>UIApplicationSceneManifest</key>

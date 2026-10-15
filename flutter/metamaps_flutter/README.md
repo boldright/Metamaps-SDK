@@ -67,18 +67,23 @@ Add these purpose strings to the host app's `Info.plist`, even if you only show 
 <key>NSSpeechRecognitionUsageDescription</key>
 <string>Speech recognition turns your voice into map searches and questions.</string>
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>Nearby beacons are used to show your location and routes inside the building.</string>
+<string>Your location is used to show where you are on the map and to find routes.</string>
 <key>NSMotionUsageDescription</key>
 <string>Motion data keeps your location up to date while you walk.</string>
 ```
 
-The microphone and speech recognition keys are used by the map's voice input. The location and motion keys are
-used only by indoor positioning; App Store Connect checks for them because the SDK links Core Location and Core
-Motion.
+The microphone and speech recognition keys are used by the map's voice input. The location key is used when the
+map shows the user's location: by GPS location on maps that enable it, and by indoor positioning. On a map with GPS
+location enabled, the system asks for location permission the first time the user taps the location button in the
+map. The motion key is used only by indoor positioning. App Store Connect checks for the location and motion keys
+because the SDK links Core Location and Core Motion.
 
 On Android, a map-only app needs no permission entries: the native libraries add only `INTERNET`. Apps that use
 indoor positioning declare the location, Bluetooth, and activity recognition permissions in their own manifest; the
-developer guide has the exact block. The SDK never shows a permission dialog from `load` or `configure`.
+developer guide has the exact block. The SDK never shows a permission dialog from `load` or `configure`. Maps that
+show the user's location with GPS also need `ACCESS_FINE_LOCATION`: the map view lets the map read the device
+location only after your app has been granted it, and never asks for it. Voice input works the same way with
+`RECORD_AUDIO`; without it, the map hides its microphone button on Android.
 
 ## Map view
 
@@ -123,7 +128,9 @@ for the query parameters the public map supports, `retryPolicy` for load retries
 [query parameter appendix](../../docs/APPENDIX-QUERY-PARAMETERS.md).
 
 The controller provides `load` / `reload`, floor selection, showing a spot, setting the destination, changing the
-language, the center reticle and its candidate coordinate, and `openExternalLink`. For indoor positioning it also
+language, the center reticle and its candidate coordinate, `openExternalLink`, and `canGoBack` / `goBack` for the
+back button. Wrap the map's screen in `PopScope` with `canPop: !canGoBack` and call `goBack` when the pop did not
+happen, so that back closes an open spot before it leaves the screen; the example app shows how. For indoor positioning it also
 provides permission requests, starting and stopping positioning, and resetting the walking baseline. The `load` / `reload` futures complete when the
 native WebView finishes loading the main frame or fails with a typed error. A call replaced by a later call
 completes with `webContentLoadFailed` (`debugDetail: superseded`).

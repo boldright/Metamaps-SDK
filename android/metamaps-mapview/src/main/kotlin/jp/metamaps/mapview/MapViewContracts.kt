@@ -2,6 +2,7 @@
 
 package jp.metamaps.mapview
 
+import android.webkit.PermissionRequest
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -76,7 +77,7 @@ enum class MetamapsExternalLinkDecision {
  * @property retryPolicy Automatic retry policy for failed map loads.
  * @property userAgentAppendix App identifier appended after `Metamaps/<version>` in the user agent.
  * @property isWebViewInspectable Allows Chrome DevTools to inspect the WebView. Enable only in
- *   development builds.
+ *   development builds. Android applies this to every WebView in the process, and it stays on until the process ends.
  */
 data class MetamapsMapViewConfiguration(
     val mapSlug: String,
@@ -169,6 +170,62 @@ internal fun buildMetamapsUserAgent(
 internal fun isAllowedExternalLinkScheme(uri: URI): Boolean =
     uri.scheme?.lowercase() in setOf("http", "https", "tel", "mailto", "sms", "geo")
 
+/** Whether [uri] has the same scheme, host, and port as the configured [baseUrl]. */
+internal fun isSameOrigin(uri: URI, baseUrl: URI): Boolean =
+    uri.scheme.equals(baseUrl.scheme, ignoreCase = true) &&
+        uri.host.equals(baseUrl.host, ignoreCase = true) &&
+        normalizedPort(uri) == normalizedPort(baseUrl)
+
+/**
+ * Whether to grant a web geolocation request from [origin]. Only the configured HTTPS map origin is granted, and only
+ * while the app already holds precise location permission. The SDK never asks for the permission here.
+ */
+internal fun shouldGrantWebGeolocation(
+    origin: String?,
+    baseUrl: URI,
+    hasPreciseLocationPermission: Boolean,
+): Boolean = hasPreciseLocationPermission && isConfiguredHttpsOrigin(origin, baseUrl)
+
+/**
+ * Whether to grant a web permission request for [resources] from [origin]. Only microphone capture for the web map's
+ * voice input is granted, from the configured HTTPS map origin, and only while the app already holds `RECORD_AUDIO`. A
+ * request that includes the camera or any other resource is denied as a whole. The SDK never asks for the permission
+ * here.
+ */
+internal fun shouldGrantWebAudioCapture(
+    origin: String?,
+    resources: List<String>,
+    baseUrl: URI,
+    hasRecordAudioPermission: Boolean,
+): Boolean = hasRecordAudioPermission &&
+    resources.isNotEmpty() &&
+    resources.all { it == PermissionRequest.RESOURCE_AUDIO_CAPTURE } &&
+    isConfiguredHttpsOrigin(origin, baseUrl)
+
+/**
+ * Whether the map view announces voice input (`bridge.hello.payload.speechRecognition`): the microphone would be
+ * granted to the map origin and the device has a speech recognition service. Derived from [shouldGrantWebAudioCapture]
+ * so that the announcement cannot drift from what the map view actually grants.
+ */
+internal fun isWebSpeechRecognitionAvailable(
+    baseUrl: URI,
+    hasRecordAudioPermission: Boolean,
+    hasRecognitionService: Boolean,
+): Boolean = hasRecognitionService && shouldGrantWebAudioCapture(
+    baseUrl.toString(),
+    listOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE),
+    baseUrl,
+    hasRecordAudioPermission,
+)
+
+private fun isConfiguredHttpsOrigin(origin: String?, baseUrl: URI): Boolean {
+    val uri = origin?.let { runCatching { URI.create(it) }.getOrNull() } ?: return false
+    return uri.scheme.equals("https", ignoreCase = true) && isSameOrigin(uri, baseUrl)
+}
+
+private fun normalizedPort(uri: URI): Int =
+    if (uri.port >= 0) uri.port else if (uri.scheme == "https") 443 else 80
+
 internal fun isValidMetamapsSpotStableKey(value: String): Boolean =
     Regex("[A-Za-z0-9_-]{1,128}").matches(value)
 
@@ -235,5 +292,8 @@ sealed interface MetamapsMapViewEvent {
     data class SpotSelected(val event: SpotSelectedEvent) : MetamapsMapViewEvent
     data class RouteChanged(val event: RouteChangedEvent) : MetamapsMapViewEvent
     data class ExternalLinkRequested(val uri: URI) : MetamapsMapViewEvent
+
+    /** Whether the web map has a step that going back closes changed. See [MetamapsMapView.canGoBack]. */
+    data class CanGoBackChanged(val canGoBack: Boolean) : MetamapsMapViewEvent
     data class Error(val error: MetamapsError) : MetamapsMapViewEvent
 }

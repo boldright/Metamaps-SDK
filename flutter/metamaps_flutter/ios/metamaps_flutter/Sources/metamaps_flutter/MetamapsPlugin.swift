@@ -279,6 +279,20 @@ public final class MetamapsPlugin: NSObject, FlutterPlugin, MetamapsHostApi {
     }
   }
 
+  func goBackMapView(
+    viewId: Int64,
+    completion: @escaping (Result<NativeGoBackResult, Error>) -> Void
+  ) {
+    Task { @MainActor [weak self] in
+      guard let self else { return }
+      guard let mapView = self.mapViews[viewId] else {
+        completion(.success(.init(wentBack: false, error: self.missingOwner("mapView", viewId))))
+        return
+      }
+      completion(.success(.init(wentBack: mapView.goBack(), error: nil)))
+    }
+  }
+
   @MainActor
   func emit(_ event: NativeEvent) {
     events.emit(event)

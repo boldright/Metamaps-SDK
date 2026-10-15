@@ -1309,6 +1309,46 @@ struct NativeRouteChangedEvent: Hashable, CustomStringConvertible {
 }
 
 /// Generated class from Pigeon that represents data sent in messages.
+struct NativeGoBackResult: Hashable, CustomStringConvertible {
+  var wentBack: Bool
+  var error: NativeErrorMessage? = nil
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> NativeGoBackResult? {
+    let wentBack = pigeonVar_list[0] as! Bool
+    let error: NativeErrorMessage? = nilOrValue(pigeonVar_list[1])
+
+    return NativeGoBackResult(
+      wentBack: wentBack,
+      error: error
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      wentBack,
+      error,
+    ]
+  }
+  static func == (lhs: NativeGoBackResult, rhs: NativeGoBackResult) -> Bool {
+    if Swift.type(of: lhs) != Swift.type(of: rhs) {
+      return false
+    }
+    return MessagesPigeonInternal.deepEquals(lhs.wentBack, rhs.wentBack) && MessagesPigeonInternal.deepEquals(lhs.error, rhs.error)
+  }
+
+  func hash(into hasher: inout Hasher) {
+    hasher.combine("NativeGoBackResult")
+    MessagesPigeonInternal.deepHash(value: wentBack, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: error, hasher: &hasher)
+  }
+
+  public var description: String {
+    return "NativeGoBackResult(wentBack: \(String(describing: wentBack)), error: \(String(describing: error)))"
+  }
+}
+
+/// Generated class from Pigeon that represents data sent in messages.
 /// This protocol should not be extended by any user class outside of the generated file.
 protocol NativeEvent {
 
@@ -1400,6 +1440,7 @@ struct NativeMapViewEvent: NativeEvent {
   var routeChanged: NativeRouteChangedEvent? = nil
   var externalUrl: String? = nil
   var error: NativeErrorMessage? = nil
+  var canGoBack: Bool? = nil
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
@@ -1418,6 +1459,7 @@ struct NativeMapViewEvent: NativeEvent {
     let routeChanged: NativeRouteChangedEvent? = nilOrValue(pigeonVar_list[11])
     let externalUrl: String? = nilOrValue(pigeonVar_list[12])
     let error: NativeErrorMessage? = nilOrValue(pigeonVar_list[13])
+    let canGoBack: Bool? = nilOrValue(pigeonVar_list[14])
 
     return NativeMapViewEvent(
       viewId: viewId,
@@ -1433,7 +1475,8 @@ struct NativeMapViewEvent: NativeEvent {
       spotSelected: spotSelected,
       routeChanged: routeChanged,
       externalUrl: externalUrl,
-      error: error
+      error: error,
+      canGoBack: canGoBack
     )
   }
   func toList() -> [Any?] {
@@ -1452,13 +1495,14 @@ struct NativeMapViewEvent: NativeEvent {
       routeChanged,
       externalUrl,
       error,
+      canGoBack,
     ]
   }
   static func == (lhs: NativeMapViewEvent, rhs: NativeMapViewEvent) -> Bool {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return MessagesPigeonInternal.deepEquals(lhs.viewId, rhs.viewId) && MessagesPigeonInternal.deepEquals(lhs.type, rhs.type) && MessagesPigeonInternal.deepEquals(lhs.ready, rhs.ready) && MessagesPigeonInternal.deepEquals(lhs.loadState, rhs.loadState) && MessagesPigeonInternal.deepEquals(lhs.positioningStatus, rhs.positioningStatus) && MessagesPigeonInternal.deepEquals(lhs.position, rhs.position) && MessagesPigeonInternal.deepEquals(lhs.capabilities, rhs.capabilities) && MessagesPigeonInternal.deepEquals(lhs.motionHeading, rhs.motionHeading) && MessagesPigeonInternal.deepEquals(lhs.beaconSignals, rhs.beaconSignals) && MessagesPigeonInternal.deepEquals(lhs.floorChanged, rhs.floorChanged) && MessagesPigeonInternal.deepEquals(lhs.spotSelected, rhs.spotSelected) && MessagesPigeonInternal.deepEquals(lhs.routeChanged, rhs.routeChanged) && MessagesPigeonInternal.deepEquals(lhs.externalUrl, rhs.externalUrl) && MessagesPigeonInternal.deepEquals(lhs.error, rhs.error)
+    return MessagesPigeonInternal.deepEquals(lhs.viewId, rhs.viewId) && MessagesPigeonInternal.deepEquals(lhs.type, rhs.type) && MessagesPigeonInternal.deepEquals(lhs.ready, rhs.ready) && MessagesPigeonInternal.deepEquals(lhs.loadState, rhs.loadState) && MessagesPigeonInternal.deepEquals(lhs.positioningStatus, rhs.positioningStatus) && MessagesPigeonInternal.deepEquals(lhs.position, rhs.position) && MessagesPigeonInternal.deepEquals(lhs.capabilities, rhs.capabilities) && MessagesPigeonInternal.deepEquals(lhs.motionHeading, rhs.motionHeading) && MessagesPigeonInternal.deepEquals(lhs.beaconSignals, rhs.beaconSignals) && MessagesPigeonInternal.deepEquals(lhs.floorChanged, rhs.floorChanged) && MessagesPigeonInternal.deepEquals(lhs.spotSelected, rhs.spotSelected) && MessagesPigeonInternal.deepEquals(lhs.routeChanged, rhs.routeChanged) && MessagesPigeonInternal.deepEquals(lhs.externalUrl, rhs.externalUrl) && MessagesPigeonInternal.deepEquals(lhs.error, rhs.error) && MessagesPigeonInternal.deepEquals(lhs.canGoBack, rhs.canGoBack)
   }
 
   func hash(into hasher: inout Hasher) {
@@ -1477,10 +1521,11 @@ struct NativeMapViewEvent: NativeEvent {
     MessagesPigeonInternal.deepHash(value: routeChanged, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: externalUrl, hasher: &hasher)
     MessagesPigeonInternal.deepHash(value: error, hasher: &hasher)
+    MessagesPigeonInternal.deepHash(value: canGoBack, hasher: &hasher)
   }
 
   public var description: String {
-    return "NativeMapViewEvent(viewId: \(String(describing: viewId)), type: \(String(describing: type)), ready: \(String(describing: ready)), loadState: \(String(describing: loadState)), positioningStatus: \(String(describing: positioningStatus)), position: \(String(describing: position)), capabilities: \(String(describing: capabilities)), motionHeading: \(String(describing: motionHeading)), beaconSignals: \(String(describing: beaconSignals)), floorChanged: \(String(describing: floorChanged)), spotSelected: \(String(describing: spotSelected)), routeChanged: \(String(describing: routeChanged)), externalUrl: \(String(describing: externalUrl)), error: \(String(describing: error)))"
+    return "NativeMapViewEvent(viewId: \(String(describing: viewId)), type: \(String(describing: type)), ready: \(String(describing: ready)), loadState: \(String(describing: loadState)), positioningStatus: \(String(describing: positioningStatus)), position: \(String(describing: position)), capabilities: \(String(describing: capabilities)), motionHeading: \(String(describing: motionHeading)), beaconSignals: \(String(describing: beaconSignals)), floorChanged: \(String(describing: floorChanged)), spotSelected: \(String(describing: spotSelected)), routeChanged: \(String(describing: routeChanged)), externalUrl: \(String(describing: externalUrl)), error: \(String(describing: error)), canGoBack: \(String(describing: canGoBack)))"
   }
 }
 
@@ -1530,8 +1575,10 @@ private class MessagesPigeonCodecReader: FlutterStandardReader {
     case 149:
       return NativeRouteChangedEvent.fromList(self.readValue() as! [Any?])
     case 150:
-      return NativePositioningEvent.fromList(self.readValue() as! [Any?])
+      return NativeGoBackResult.fromList(self.readValue() as! [Any?])
     case 151:
+      return NativePositioningEvent.fromList(self.readValue() as! [Any?])
+    case 152:
       return NativeMapViewEvent.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -1604,11 +1651,14 @@ private class MessagesPigeonCodecWriter: FlutterStandardWriter {
     } else if let value = value as? NativeRouteChangedEvent {
       super.writeByte(149)
       super.writeValue(value.toList())
-    } else if let value = value as? NativePositioningEvent {
+    } else if let value = value as? NativeGoBackResult {
       super.writeByte(150)
       super.writeValue(value.toList())
-    } else if let value = value as? NativeMapViewEvent {
+    } else if let value = value as? NativePositioningEvent {
       super.writeByte(151)
+      super.writeValue(value.toList())
+    } else if let value = value as? NativeMapViewEvent {
+      super.writeByte(152)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -1657,6 +1707,7 @@ protocol MetamapsHostApi {
   func setMapViewCenterReticleEnabled(viewId: Int64, enabled: Bool, completion: @escaping (Result<NativeOperationResult, Error>) -> Void)
   func requestMapViewCenterReticleCandidate(viewId: Int64, completion: @escaping (Result<NativeMapCenterReticleCandidateResult, Error>) -> Void)
   func openMapViewExternalLink(viewId: Int64, url: String, completion: @escaping (Result<NativeOperationResult, Error>) -> Void)
+  func goBackMapView(viewId: Int64, completion: @escaping (Result<NativeGoBackResult, Error>) -> Void)
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -2045,6 +2096,23 @@ class MetamapsHostApiSetup {
       }
     } else {
       openMapViewExternalLinkChannel.setMessageHandler(nil)
+    }
+    let goBackMapViewChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.metamaps_flutter.MetamapsHostApi.goBackMapView\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      goBackMapViewChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let viewIdArg = args[0] as! Int64
+        api.goBackMapView(viewId: viewIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      goBackMapViewChannel.setMessageHandler(nil)
     }
   }
 }

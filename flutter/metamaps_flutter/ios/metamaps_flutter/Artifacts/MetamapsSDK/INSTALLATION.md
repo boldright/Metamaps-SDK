@@ -18,7 +18,7 @@ mkdir -p Vendor
 cp -R ../Metamaps-SDK/ios Vendor/metamaps-ios
 ```
 
-To get a specific version, check out its tag, for example `git -C ../Metamaps-SDK checkout v0.6.0`.
+To get a specific version, check out its tag, for example `git -C ../Metamaps-SDK checkout v0.7.0`.
 
 Keeping the directory name fixed means Xcode's package reference survives SDK updates. Step 10 describes how to
 replace the package.
@@ -86,7 +86,8 @@ final class MapViewController: UIViewController, MetamapsMapViewDelegate {
         switch event {
         case .ready:
             isMapReady = true
-        case .loadState(.loading):
+        case .loadState(let state) where state != .loaded:
+            // Commands throw again from a new page load, a failure, or disposal until the next .ready.
             isMapReady = false
         case .error(let error):
             // Show your recovery UI.
@@ -127,15 +128,17 @@ Add these four keys to your app's `Info.plist`, even if you only show maps:
 <key>NSSpeechRecognitionUsageDescription</key>
 <string>Speech recognition turns your voice into map searches and questions.</string>
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>Nearby beacons are used to show your location and routes inside the building.</string>
+<string>Your location is used to show where you are on the map and to find routes.</string>
 <key>NSMotionUsageDescription</key>
 <string>Motion data keeps your location up to date while you walk.</string>
 ```
 
 - The microphone and speech recognition keys are used by the map's voice input.
-- The location and motion keys are used only by indoor positioning (step 8). App Store Connect still checks for
-  them because the SDK links Core Location and Core Motion. The system never shows these prompts unless
-  positioning starts.
+- The location key is used when the map shows the user's location: by GPS location on maps that enable it, and by
+  indoor positioning (step 8). On a map with GPS location enabled, the system asks for location permission the
+  first time the user taps the location button in the map, even in an app that only shows maps.
+- The motion key is used only by indoor positioning, and the system asks for it only when positioning starts.
+- App Store Connect checks for the location and motion keys because the SDK links Core Location and Core Motion.
 
 The SDK does not use Core Bluetooth directly, so it needs neither `NSBluetoothAlwaysUsageDescription` nor the
 background location mode.
@@ -150,6 +153,29 @@ background location mode.
 
 `load()` finishes when the web content has loaded, which is earlier than `.ready`. As in the example above, wait
 for `.ready` before calling methods that control the displayed map.
+
+The map can also fail after it has loaded, for example when the web content process ends. The view then sends
+`.loadState(.failed)` and an error whose `userAction` is `.retry`, and the map stays blank until you call
+`reload()`.
+
+### Back navigation
+
+When the user opens a spot, the map adds a step to its history, as the web map does in a browser. iOS has no system
+back button, but if your screen has its own back control, let it close that step first. `canGoBack` is `true` while
+the map has such a step, `.canGoBackChanged` reports its changes, and `goBack()` closes the step:
+
+```swift
+// In the action of your back button.
+if metamapsView?.goBack() != true {
+    navigationController?.popViewController(animated: true)
+}
+```
+
+The back button of a `UINavigationController` and its edge swipe pop your screen without calling your code. To let
+them close the map's step first, show your own back button (set `navigationItem.hidesBackButton`) and disable
+`navigationController?.interactivePopGestureRecognizer` while `canGoBack` is `true`.
+
+The map's share buttons open the iOS share sheet through WebKit. Your app needs no code for this.
 
 ## 6. Change the display language
 
@@ -258,7 +284,7 @@ rm -rf Vendor/metamaps-ios
 cp -R ../Metamaps-SDK/ios Vendor/metamaps-ios
 ```
 
-Replace `<version>` with the version to install, for example `0.6.0`.
+Replace `<version>` with the version to install, for example `0.7.0`.
 
 **Do not skip `rm -rf`.** If `Vendor/metamaps-ios` still exists, `cp -R` copies the new directory **into** it.
 Xcode then keeps reading the old `Vendor/metamaps-ios/Package.swift` and `Artifacts/`, and the build succeeds with

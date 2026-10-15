@@ -11,16 +11,27 @@ import WebKit
 ///
 /// Use it only from the main actor. `load()` waits for a successful HTTP response and the end of the main-frame
 /// load, but not for the `.ready` event.
+///
+/// Host commands such as `selectFloor(_:)`, `showSpot(_:)`, `setDestination(_:)`, and `setLanguage(_:)` throw
+/// `bridgeHandshakeFailed` until `.ready`, and again from the moment the web view starts loading another page, such as
+/// after `setLanguage(_:)` or `reload()`, until the next `.ready`. A command the web map cannot complete arrives
+/// later as `.error` with `mapOperationFailed`.
 @MainActor
 public final class MetamapsMapView: UIView {
     /// The delegate that receives events and decides how to handle external links.
     public weak var delegate: MetamapsMapViewDelegate?
-    /// An asynchronous stream of the events this view sends.
+    /// An asynchronous stream of the events this view sends. Iterate it from one task only. If nothing reads it, it
+    /// keeps the newest 64 events. It finishes when the view is disposed. `delegate` receives the same events.
     public nonisolated let events: AsyncStream<MetamapsMapViewEvent>
     /// The current main-frame load state.
     public private(set) var loadState: MapViewLoadState = .idle
+    /// Whether the web map has a step that going back closes, such as an open spot. iOS has no system back, so
+    /// connect it to the host's own back control and call `goBack()` from it. `false` until the map is ready, and
+    /// again whenever the web view loads a new page. Changes arrive as `.canGoBackChanged`.
+    public private(set) var canGoBack = false
 
-    /// The embedded WKWebView owned by the SDK. Do not change its navigation delegate.
+    /// The embedded WKWebView owned by the SDK. Do not change its `navigationDelegate` or `uiDelegate`: the SDK uses
+    /// them for navigation limits, new windows, and the microphone and location grants.
     public let webView: WKWebView
     private let configuration: MetamapsMapViewConfiguration
     private let positioningClient: MetamapsPositioningClient
@@ -121,17 +132,17 @@ public final class MetamapsMapView: UIView {
 
     /// Loads the web map and waits until it succeeds or fails with `MetamapsError`.
     ///
-    /// Cancelling the task stops the WebView load and automatic retries.
+    /// Cancelling the task stops the WebView load and automatic retries. A newer `load()` or `reload()` and
+    /// `dispose()` end this call with `CancellationError`. When the map later fails, for example because the web
+    /// content process ended, the view sends `.loadState(.failed)` and an error whose `userAction` is `.retry`;
+    /// call `reload()` to recover.
     public func load() async throws {
         guard !disposed else { throw bridgeError(.internalInvariantViolation, "load called after dispose") }
         try configuration.validate()
-        failPendingCenterReticleRequests(
-            bridgeError(.bridgeHandshakeFailed, "Map document changed during center reticle request"))
         loadGeneration += 1
         let generation = loadGeneration
         supersedeCurrentLoad()
-        bridgeValidator.reset()
-        outboundSequence = 0
+        resetPageBridge()
         if loadState != .loading { emit(.loadState(.loading)) }
         do {
             try await withTaskCancellationHandler {
@@ -166,7 +177,9 @@ public final class MetamapsMapView: UIView {
         }
     }
 
-    /// Requests the OS permissions positioning needs. Call it from an explicit user action.
+    /// Requests the OS permissions positioning needs. It shows OS permission dialogs, so call it from an explicit
+    /// user action. GPS location in the map and voice input do not use it: WebKit asks for those permissions itself,
+    /// using the purpose strings in `Info.plist`.
     public func requestPositioningAuthorization() async throws {
         guard !disposed else { throw bridgeError(.internalInvariantViolation, "requestPositioningAuthorization called after dispose") }
         if positioningClient.status == .unconfigured { try await positioningClient.configure() }
@@ -234,6 +247,15 @@ public final class MetamapsMapView: UIView {
         try sendHostCommand("map.setLanguage", payload: LanguagePayload(language: language))
     }
 
+    /// Closes the web map's last step, as the browser's back button does on the web, such as an open spot. Returns
+    /// `false` and does nothing when `canGoBack` is `false`, so that the host can handle back itself.
+    @discardableResult
+    public func goBack() -> Bool {
+        guard canGoBack, bridgeValidator.handshakeComplete else { return false }
+        send(type: "map.goBack", payload: EmptyPayload())
+        return true
+    }
+
     /// Shows or hides the center reticle. Hidden by default.
     public func setCenterReticleEnabled(_ enabled: Bool) throws {
         try sendHostCommand("map.setCenterReticle", payload: CenterReticleVisibilityPayload(enabled: enabled))
@@ -248,6 +270,8 @@ public final class MetamapsMapView: UIView {
 
     /// Gets the candidate on the selected floor under the reticle at the time of the call, once.
     /// Returns `nil` when the reticle is hidden, all floors are shown, or the reticle does not hit a floor.
+    /// Throws `bridgeHandshakeFailed` when the page changes, the view is disposed, or the map does not answer
+    /// within 5 seconds.
     public func requestCenterReticleCandidate() async throws -> MapCenterReticleCandidate? {
         guard !disposed else {
             throw bridgeError(.internalInvariantViolation, "requestCenterReticleCandidate called after dispose")
@@ -311,13 +335,14 @@ public final class MetamapsMapView: UIView {
         failPendingCenterReticleRequests(
             bridgeError(.bridgeHandshakeFailed, "MapView disposed during center reticle request"))
         positioningClient.dispose()
-        webView.stopLoading()
-        activeNavigation = nil
+        // 15 §2: dispose() ends an ongoing load as a cancellation, without an error event.
+        supersedeCurrentLoad()
+        // A host may keep the view after dispose; the page must not keep playing the voice guide.
+        webView.pauseAllMediaPlayback(completionHandler: nil)
         webView.navigationDelegate = nil
         webView.uiDelegate = nil
         webView.configuration.userContentController.removeScriptMessageHandler(forName: Self.messageHandlerName, contentWorld: .page)
-        loadContinuation?.resume(throwing: bridgeError(.webContentLoadFailed, "MapView disposed during load"))
-        loadContinuation = nil
+        updateCanGoBack(false)
         emit(.loadState(.disposed))
         continuation.finish()
         delegate = nil
@@ -432,13 +457,10 @@ public final class MetamapsMapView: UIView {
             // Do not make host notifications depend on the WebView bridge being ready. Hiding them until then
             // would leave the operator with only the status text and no way to diagnose positioning.
             emit(.position(update))
-            guard bridgeValidator.handshakeComplete else { return }
-            do {
-                try validateManifestIdentityIfReady()
-                send(type: "positioning.position", payload: update)
-            } catch let error as MetamapsError {
-                emit(.error(error))
-            } catch {}
+            // A position from the manifest of another map or revision is not painted. The handshake stopped
+            // positioning in that case, and preparePositioningIfNeeded configures the manifest of this page.
+            guard bridgeValidator.handshakeComplete, manifestMatchesPage else { return }
+            send(type: "positioning.position", payload: update)
         case .beaconSignals(let readings):
             guard configuration.effectiveBeaconDiagnostics else { return }
             scheduleBeaconSignalPresentation(readings)
@@ -466,8 +488,12 @@ public final class MetamapsMapView: UIView {
     }
 
     private func receive(_ message: WKScriptMessage) {
-        guard !disposed, message.frameInfo.isMainFrame, isAllowed(message.frameInfo.securityOrigin) else {
-            emit(.error(bridgeError(.bridgeHandshakeFailed, "Rejected bridge message origin or frame.")))
+        // Embedded https frames (15 §3) and the previous document can reach the handler. They are not the map, so
+        // drop them without reporting an error to the host.
+        guard !disposed, message.frameInfo.isMainFrame, isAllowed(message.frameInfo.securityOrigin) else { return }
+        // JSONSerialization raises an Objective-C exception, which Swift cannot catch, for a body it cannot encode.
+        guard JSONSerialization.isValidJSONObject(message.body) else {
+            emit(.error(bridgeError(.bridgeHandshakeFailed, "Bridge message is not a JSON object.")))
             return
         }
         do {
@@ -475,7 +501,8 @@ public final class MetamapsMapView: UIView {
             let envelope = try JSONDecoder().decode(BridgeEnvelope.self, from: data)
             let ready = try bridgeValidator.validate(envelope)
             if let ready {
-                try validateManifestIdentityIfReady()
+                // A manifest from an older revision must not block the map: preparePositioningIfNeeded configures
+                // the manifest of this page after the handshake, and positioning commands validate it (15 §3).
                 completeHandshake(with: ready)
                 return
             }
@@ -538,6 +565,8 @@ public final class MetamapsMapView: UIView {
             if let event: RouteChangedEvent = try decodePayload(envelope.payload) { emit(.routeChanged(event)) }
         case "map.centerReticleCandidate":
             handleCenterReticleCandidate(envelope.payload)
+        case "map.canGoBackChanged":
+            if let value = envelope.canGoBack { updateCanGoBack(value) }
         case "map.externalLinkRequested":
             // After the handshake, the web page calls preventDefault on link taps and sends them through this path.
             // Route them through the same hook-then-default flow as intercepted navigation.
@@ -553,6 +582,9 @@ public final class MetamapsMapView: UIView {
             break
         }
     }
+
+    /// Whether the verified manifest belongs to the loaded page. `true` while there is no page or no manifest yet.
+    private var manifestMatchesPage: Bool { (try? validateManifestIdentityIfReady()) != nil }
 
     private func validateManifestIdentityIfReady() throws {
         guard let ready = bridgeValidator.ready, let identity = positioningClient.manifestIdentity else { return }
@@ -572,8 +604,14 @@ public final class MetamapsMapView: UIView {
                 groupId: ready.groupId,
                 configRevision: ready.configRevision,
                 manifestRevision: ready.manifestRevision)))
-            if let update = self.positioningClient.latestUpdate {
-                self.send(type: "positioning.position", payload: update)
+            if self.manifestMatchesPage {
+                if let update = self.positioningClient.latestUpdate {
+                    self.send(type: "positioning.position", payload: update)
+                }
+            } else {
+                // 15 §3: stop positioning that runs on the manifest of another map or revision. The map stays
+                // usable, and preparePositioningIfNeeded configures the manifest of this page.
+                self.stopPositioning()
             }
             self.preparePositioningIfNeeded(for: ready)
         }
@@ -602,7 +640,7 @@ public final class MetamapsMapView: UIView {
             canStartWithoutNewPrompt: canStartPositioningWithoutNewPrompt(
                 capabilities: positioningClient.capabilities(),
                 motionPolicy: configuration.positioningConfiguration.motionPolicy),
-            hasVerifiedManifest: positioningClient.manifestIdentity != nil)
+            hasVerifiedManifest: positioningClient.manifestIdentity != nil && manifestMatchesPage)
     }
 
     /// If the manifest download or permission decision finishes after the handshake, send the same `bridge.hello` again
@@ -699,6 +737,22 @@ public final class MetamapsMapView: UIView {
                 }
             }
         }
+    }
+
+    private func updateCanGoBack(_ value: Bool) {
+        guard canGoBack != value else { return }
+        canGoBack = value
+        emit(.canGoBackChanged(value))
+    }
+
+    /// The history the web map can go back through belongs to the previous page. Going back across pages would
+    /// reload the previous page, such as the one before a language change.
+    private func resetPageBridge() {
+        failPendingCenterReticleRequests(
+            bridgeError(.bridgeHandshakeFailed, "Map document changed during center reticle request"))
+        bridgeValidator.reset()
+        outboundSequence = 0
+        updateCanGoBack(false)
     }
 
     private func sendHostCommand<T: Encodable>(_ type: String, payload: T) throws {
@@ -833,13 +887,6 @@ public final class MetamapsMapView: UIView {
             port: origin.port)
     }
 
-    private func isAllowed(_ url: URL) -> Bool {
-        guard let configuredOrigin = MetamapsWebOrigin(url: configuration.baseURL),
-              let requestedOrigin = MetamapsWebOrigin(url: url)
-        else { return false }
-        return configuredOrigin == requestedOrigin
-    }
-
     private func emit(_ event: MetamapsMapViewEvent) {
         if case .loadState(let state) = event { loadState = state }
         continuation.yield(event)
@@ -898,6 +945,7 @@ private struct OptionalSpotIdPayload: Encodable {
     let spotId: String?
 }
 
+private struct EmptyPayload: Encodable {}
 private struct LanguagePayload: Encodable { let language: String }
 private struct CenterReticleVisibilityPayload: Encodable { let enabled: Bool }
 private struct CenterReticleRequestPayload: Encodable {
@@ -961,10 +1009,33 @@ extension MetamapsMapView: WKNavigationDelegate, WKUIDelegate, ScriptMessageRece
         decisionHandler(shouldGrant ? .grant : .prompt)
     }
 
+    /// WebKit calls this on iOS 27 and later. The explicit selector also exposes it when the SDK is built with an
+    /// older SDK that does not declare it. The system location permission is still required.
+    @objc(webView:requestGeolocationPermissionForOrigin:initiatedByFrame:decisionHandler:)
+    public func webView(
+        _ webView: WKWebView,
+        requestGeolocationPermissionFor origin: WKSecurityOrigin,
+        initiatedByFrame frame: WKFrameInfo,
+        decisionHandler: @escaping @MainActor @Sendable (WKPermissionDecision) -> Void
+    ) {
+        let shouldGrant = isConfiguredMetamapsMainFrameOrigin(
+            baseURL: configuration.baseURL,
+            requestingScheme: origin.protocol,
+            requestingHost: origin.host,
+            requestingPort: origin.port,
+            isMainFrame: frame.isMainFrame)
+        decisionHandler(shouldGrant ? .grant : .prompt)
+    }
+
     public func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        bridgeValidator.reset()
-        outboundSequence = 0
+        resetPageBridge()
         if loadState != .loading { emit(.loadState(.loading)) }
+    }
+
+    public func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        // The previous document keeps running until the new one commits and can still send `map.ready`. Reset
+        // again so that only the new document completes the handshake.
+        resetPageBridge()
     }
 
     public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
@@ -974,7 +1045,13 @@ extension MetamapsMapView: WKNavigationDelegate, WKUIDelegate, ScriptMessageRece
             loadContinuation?.resume()
             loadContinuation = nil
         }
-        sendHello()
+        // The bridge is injected at document start, so `map.ready` can arrive before this point. The hello sent then
+        // was held back until the page loaded, so complete that handshake now.
+        if let ready = bridgeValidator.ready, !bridgeValidator.handshakeComplete {
+            completeHandshake(with: ready)
+        } else {
+            sendHello()
+        }
     }
 
     public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -1017,12 +1094,17 @@ extension MetamapsMapView: WKNavigationDelegate, WKUIDelegate, ScriptMessageRece
         decisionHandler: @escaping @MainActor @Sendable (WKNavigationActionPolicy) -> Void
     ) {
         guard let url = navigationAction.request.url else { decisionHandler(.cancel); return }
-        if url.scheme == "about" || isAllowed(url) { decisionHandler(.allow); return }
-        // A new-window request (targetFrame == nil) is handled once, in createWebViewWith.
-        if navigationAction.targetFrame?.isMainFrame == true {
+        let target: MetamapsNavigationTarget = navigationAction.targetFrame
+            .map { $0.isMainFrame ? .mainFrame : .subframe } ?? .newWindow
+        switch metamapsNavigationActionPolicy(baseURL: configuration.baseURL, url: url, target: target) {
+        case .allow:
+            decisionHandler(.allow)
+        case .openExternally:
             handleExternalLink(url)
+            decisionHandler(.cancel)
+        case .cancel:
+            decisionHandler(.cancel)
         }
-        decisionHandler(.cancel)
     }
 
     public func webView(
@@ -1031,13 +1113,16 @@ extension MetamapsMapView: WKNavigationDelegate, WKUIDelegate, ScriptMessageRece
         for navigationAction: WKNavigationAction,
         windowFeatures: WKWindowFeatures
     ) -> WKWebView? {
-        if let url = navigationAction.request.url, !isAllowed(url) {
+        // New windows never open in the WebView, even for the map origin.
+        if let url = navigationAction.request.url {
             handleExternalLink(url)
         }
         return nil
     }
 
     public func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        // The page is gone, so host commands must fail until reload() completes a new handshake.
+        resetPageBridge()
         let error = makeLoadError(
             .otherNavigation,
             detail: "WKWebView content process terminated")

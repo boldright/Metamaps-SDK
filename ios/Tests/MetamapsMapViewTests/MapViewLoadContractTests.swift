@@ -118,6 +118,37 @@ struct MapViewExternalLinkPolicyTests {
     }
 }
 
+// Guards against the main frame leaving the map origin, HTTP pages loading in a subframe, a blank HTTPS embed
+// such as YouTube in rich text, or a new window opening externally twice.
+struct MapViewNavigationActionPolicyTests {
+    private let baseURL = URL(string: "https://staging.example.test:8443")!
+    private let mapPage = URL(string: "https://STAGING.example.test:8443/d/office")!
+    private let youtubeEmbed = URL(string: "https://www.youtube-nocookie.com/embed/abc")!
+
+    private func policy(_ url: URL, _ target: MetamapsNavigationTarget) -> MetamapsNavigationActionPolicy {
+        metamapsNavigationActionPolicy(baseURL: baseURL, url: url, target: target)
+    }
+
+    @Test func keepsTheMainFrameOnTheMapOrigin() {
+        #expect(policy(mapPage, .mainFrame) == .allow)
+        #expect(policy(URL(string: "about:blank")!, .mainFrame) == .allow)
+        #expect(policy(youtubeEmbed, .mainFrame) == .openExternally)
+        #expect(policy(URL(string: "https://staging.example.test/d/office")!, .mainFrame) == .openExternally)
+    }
+
+    @Test func allowsOnlyHTTPSPagesInSubframes() {
+        #expect(policy(youtubeEmbed, .subframe) == .allow)
+        #expect(policy(mapPage, .subframe) == .allow)
+        #expect(policy(URL(string: "http://www.youtube-nocookie.com/embed/abc")!, .subframe) == .cancel)
+        #expect(policy(URL(string: "data:text/html,hello")!, .subframe) == .cancel)
+    }
+
+    @Test func leavesNewWindowsToCreateWebView() {
+        #expect(policy(youtubeEmbed, .newWindow) == .allow)
+        #expect(policy(mapPage, .newWindow) == .allow)
+    }
+}
+
 // Guards against losing the SDK identifier and the optional appendix in the User-Agent string.
 struct MapViewUserAgentTests {
     @Test func appendsHostIdentifierWhenProvided() {

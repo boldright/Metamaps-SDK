@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-/// The version of the running Flutter SDK.
-const String metamapsSdkVersion = '0.6.0';
+/// The version of this plugin and the native Metamaps SDKs bundled with it. It is not the Flutter SDK version.
+const String metamapsSdkVersion = '0.7.0';
 
 /// The production origin for the map and the positioning manifest when no origin is specified.
 final Uri metamapsProductionBaseUrl = Uri(scheme: 'https', host: 'metamaps.jp');
@@ -860,6 +860,14 @@ final class MapRouteChanged extends MetamapsMapViewEvent {
 final class MapExternalLinkRequested extends MetamapsMapViewEvent {
   const MapExternalLinkRequested(this.uri);
   final Uri uri;
+}
+
+/// Reports whether the web map has a step that going back closes, such as an open spot.
+///
+/// See [MetamapsMapViewController.canGoBack].
+final class MapCanGoBackChanged extends MetamapsMapViewEvent {
+  const MapCanGoBackChanged(this.canGoBack);
+  final bool canGoBack;
 }
 
 /// Reports an error from map view loading, web map integration, or positioning.

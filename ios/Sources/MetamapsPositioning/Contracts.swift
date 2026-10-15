@@ -353,7 +353,7 @@ public enum MetamapsPositioningEvent: Sendable {
 
 /// Version information of the Metamaps iOS SDK.
 public enum MetamapsSDK {
-    public static let version = "0.6.0"
+    public static let version = "0.7.0"
 
     /// The production origin for the map and the positioning manifest when no origin is specified.
     public static let productionBaseURL = URL(string: "https://metamaps.jp")!

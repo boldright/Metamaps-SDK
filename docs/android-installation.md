@@ -22,7 +22,7 @@ sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > v
 ```
 
 To get a specific version, check out its tag before publishing, for example
-`git -C ../Metamaps-SDK checkout v0.6.0`.
+`git -C ../Metamaps-SDK checkout v0.7.0`.
 
 Because the directory name is fixed and dependency versions are read from `VERSION`, an SDK update only replaces
 this directory; `settings.gradle.kts` and `build.gradle.kts` stay unchanged. Step 11 describes the update.
@@ -117,10 +117,11 @@ class MainActivity : Activity() {
                 when (event) {
                     is MetamapsMapViewEvent.Ready -> isMapReady = true
                     is MetamapsMapViewEvent.LoadState -> {
-                        if (event.state == MapViewLoadState.LOADING) isMapReady = false
+                        // Commands throw again from a new page load, a failure, or disposal until the next Ready.
+                        if (event.state != MapViewLoadState.LOADED) isMapReady = false
                     }
                     is MetamapsMapViewEvent.Error -> {
-                        // Show your recovery UI.
+                        // Show your recovery UI. After LoadState(FAILED), call mapView.reload() to recover.
                     }
                     else -> Unit
                 }
@@ -156,6 +157,31 @@ A map-only app needs no permission entries. The SDK adds only `INTERNET` to your
 add location, Bluetooth, or activity recognition permissions. Step 9 lists the permissions that indoor
 positioning needs.
 
+Maps that show the user's location with GPS need precise location permission. The map view lets the map read the
+device location only when your app has already been granted `ACCESS_FINE_LOCATION`, and it never shows a permission
+dialog for this. To use GPS location in the map, declare `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` in your
+manifest and request them from your app. Without the permission, the map tells the user that location is not
+available.
+
+Voice input in the map's search field and AI chat needs microphone permission. The map view lets the map use the
+microphone only when your app has already been granted `RECORD_AUDIO`, and it never shows a permission dialog for
+this. To offer voice input, declare `RECORD_AUDIO` in your manifest and request it from your app. Without the
+permission, or on a device without a speech recognition service, the map hides its microphone button; after the
+user grants the permission, the button appears without reloading the map. Voice input uses the device's speech
+recognition service, which can send the audio to a server, so cover the microphone in your privacy policy. To let
+the map reach that service on Android 11 and later, the SDK adds a `<queries>` entry for
+`android.speech.RecognitionService` to your merged manifest.
+
+```xml
+<uses-permission android:name="android.permission.RECORD_AUDIO" />
+```
+
+Do not replace `webView.webChromeClient` to grant location or the microphone yourself; the map view's own client
+also handles links that open in a new window.
+
+The map's text does not follow the system font size: the map view fixes the WebView text zoom at 100%, as iOS
+does, because the map's labels and panels have fixed sizes.
+
 The SDK also removes `ACCESS_COARSE_LOCATION`, `BLUETOOTH`, and `BLUETOOTH_ADMIN`, which the Android Beacon
 Library it uses declares. The removal can also apply to the same permissions declared by other libraries in your
 app, so if another library needs any of them, declare it in your app's manifest; your app's own declarations always
@@ -175,6 +201,41 @@ flow. The main events are:
 
 `load()` finishes when the web content has loaded, which is earlier than `Ready`. As in the example above, wait for
 `Ready` before calling methods that control the displayed map.
+
+The map can also fail after it has loaded, for example when the WebView renderer process ends. The view then sends
+`LoadState(FAILED)` and an error whose `userAction` is `RETRY`, and the map stays blank until you call `reload()`.
+The view replaces its `webView` in this case, so do not keep a reference to it.
+
+### Back button
+
+When the user opens a spot, the map adds a step to its history, as the web map does in a browser. Connect the system
+back button so that back closes that step first and leaves your screen only when the map has nothing to close.
+`canGoBack` is a `StateFlow<Boolean>` that is `true` while the map has such a step, and `goBack()` closes it. The SDK
+does not register a back callback itself. Apps that target API 36 or later no longer receive `onBackPressed()` or
+`KEYCODE_BACK`, so use an `OnBackPressedCallback` from AndroidX (`androidx.activity`):
+
+```kotlin
+// In a ComponentActivity, after creating mapView.
+val mapBack = object : OnBackPressedCallback(false) {
+    override fun handleOnBackPressed() {
+        // goBack() returns false when the map closed the step in the meantime. Let back leave the screen then.
+        if (!mapView.goBack()) {
+            isEnabled = false
+            onBackPressedDispatcher.onBackPressed()
+        }
+    }
+}
+onBackPressedDispatcher.addCallback(this, mapBack)
+lifecycleScope.launch { mapView.canGoBack.collect { mapBack.isEnabled = it } }
+```
+
+In Jetpack Compose, pass the same value to `BackHandler(enabled = ...)`. `MetamapsMapViewEvent.CanGoBackChanged`
+reports the same changes to `eventListener`.
+
+### Sharing
+
+The map's share buttons open the Android share sheet with the link, and the spot name when there is one. Android
+WebView has no Web Share API, so the map view opens the sheet itself. Your app needs no code for this.
 
 ## 6. Change the display language
 
@@ -327,7 +388,7 @@ cp -R ../Metamaps-SDK/android/build/maven-repository vendor/metamaps-android/
 sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > vendor/metamaps-android/VERSION
 ```
 
-Replace `<version>` with the version to install, for example `0.6.0`.
+Replace `<version>` with the version to install, for example `0.7.0`.
 
 Build as usual after replacing the directory:
 

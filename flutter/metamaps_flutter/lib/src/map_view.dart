@@ -19,18 +19,31 @@ typedef MetamapsExternalLinkDecisionCallback =
 
 /// Controls the displayed map.
 ///
-/// Unusable after the widget is disposed. Call the control methods after receiving [MapReady].
+/// Unusable after the widget is disposed: the control methods then throw a [MetamapsError] synchronously. Call
+/// the control methods after receiving [MapReady].
 final class MetamapsMapViewController {
   MetamapsMapViewController._(this.viewId, this._nativeGateway);
 
+  /// The platform view ID of this map view. It is not a Metamaps map ID.
   final int viewId;
   final NativeGateway _nativeGateway;
   final StreamController<MetamapsMapViewEvent> _eventsController =
       StreamController<MetamapsMapViewEvent>.broadcast(sync: true);
   bool _disposed = false;
+  bool _canGoBack = false;
 
   /// A broadcast stream of the events this map view sends.
   Stream<MetamapsMapViewEvent> get events => _eventsController.stream;
+
+  /// Whether the web map has a step that going back closes, such as an open spot.
+  ///
+  /// Reading it does not rebuild your widget. Call `setState` when [MapCanGoBackChanged] arrives so that
+  /// `PopScope` reads the new value. It becomes `false` when the widget is disposed.
+  ///
+  /// Changes arrive as [MapCanGoBackChanged]. Pass the inverse to `PopScope.canPop` and call [goBack] from
+  /// `PopScope.onPopInvokedWithResult` when the pop did not happen. `false` until the map is ready, and again
+  /// whenever the web view loads a new page.
+  bool get canGoBack => _canGoBack;
 
   /// Loads the main frame. Normally called once automatically when the widget is created.
   Future<void> load() {
@@ -44,7 +57,9 @@ final class MetamapsMapViewController {
     return _nativeGateway.reloadMapView(viewId);
   }
 
-  /// Requests the OS permissions positioning needs.
+  /// Requests the OS permissions indoor positioning needs. It shows OS permission dialogs, so call it from a user
+  /// action. It never requests `RECORD_AUDIO` for voice input, and on Android it requests location only for maps
+  /// with indoor positioning; request permissions for voice input and GPS location in the map yourself.
   Future<void> requestPositioningAuthorization() {
     _ensureActive();
     return _nativeGateway.requestMapViewAuthorization(viewId);
@@ -108,6 +123,15 @@ final class MetamapsMapViewController {
     return _nativeGateway.requestMapViewCenterReticleCandidate(viewId);
   }
 
+  /// Closes the web map's last step, as the browser's back button does on the web, such as an open spot.
+  ///
+  /// Completes with `false` and does nothing when [canGoBack] is `false`, including before [MapReady], so that the
+  /// app can handle back itself. `true` means the command was sent; the change arrives as [MapCanGoBackChanged].
+  Future<bool> goBack() {
+    _ensureActive();
+    return _nativeGateway.goBackMapView(viewId);
+  }
+
   /// Opens a URL with an allowed scheme using the SDK's default handling.
   Future<void> openExternalLink(Uri url) {
     _ensureActive();
@@ -115,6 +139,9 @@ final class MetamapsMapViewController {
   }
 
   void _addEvent(MetamapsMapViewEvent event) {
+    if (event is MapCanGoBackChanged) {
+      _canGoBack = event.canGoBack;
+    }
     if (!_disposed && !_eventsController.isClosed) {
       _eventsController.add(event);
     }
@@ -125,6 +152,8 @@ final class MetamapsMapViewController {
       return;
     }
     _disposed = true;
+    // The native view can no longer report `false`, and a PopScope that still reads `true` would swallow back.
+    _canGoBack = false;
     NativeEventRouter.instance.unregisterMapView(viewId);
     unawaited(_eventsController.close());
   }

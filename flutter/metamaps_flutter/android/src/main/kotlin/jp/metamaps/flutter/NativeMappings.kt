@@ -233,6 +233,11 @@ internal fun MetamapsMapViewEvent.toFlutter(viewId: Long): NativeMapViewEvent = 
         type = "externalLinkRequested",
         externalUrl = uri.toString(),
     )
+    is MetamapsMapViewEvent.CanGoBackChanged -> NativeMapViewEvent(
+        viewId = viewId,
+        type = "canGoBackChanged",
+        canGoBack = canGoBack,
+    )
     is MetamapsMapViewEvent.Error -> NativeMapViewEvent(
         viewId = viewId,
         type = "error",

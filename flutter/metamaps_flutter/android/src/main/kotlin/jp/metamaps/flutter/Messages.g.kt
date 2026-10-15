@@ -1280,6 +1280,47 @@ data class NativeRouteChangedEvent (
   }
 }
 
+/** Generated class from Pigeon that represents data sent in messages. */
+data class NativeGoBackResult (
+  val wentBack: Boolean,
+  val error: NativeErrorMessage? = null
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): NativeGoBackResult {
+      val wentBack = pigeonVar_list[0] as Boolean
+      val error = pigeonVar_list[1] as NativeErrorMessage?
+      return NativeGoBackResult(wentBack, error)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      wentBack,
+      error,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as NativeGoBackResult
+    return MessagesPigeonUtils.deepEquals(this.wentBack, other.wentBack) && MessagesPigeonUtils.deepEquals(this.error, other.error)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.wentBack)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.error)
+    return result
+  }
+  override fun toString(): String {
+    return "NativeGoBackResult(wentBack=$wentBack, error=$error)"
+  }
+}
+
 /**
  * Generated class from Pigeon that represents data sent in messages.
  * This class should not be extended by any user class outside of the generated file.
@@ -1365,7 +1406,8 @@ data class NativeMapViewEvent (
   val spotSelected: NativeSpotSelectedEvent? = null,
   val routeChanged: NativeRouteChangedEvent? = null,
   val externalUrl: String? = null,
-  val error: NativeErrorMessage? = null
+  val error: NativeErrorMessage? = null,
+  val canGoBack: Boolean? = null
 ) : NativeEvent()
  {
   companion object {
@@ -1384,7 +1426,8 @@ data class NativeMapViewEvent (
       val routeChanged = pigeonVar_list[11] as NativeRouteChangedEvent?
       val externalUrl = pigeonVar_list[12] as String?
       val error = pigeonVar_list[13] as NativeErrorMessage?
-      return NativeMapViewEvent(viewId, type, ready, loadState, positioningStatus, position, capabilities, motionHeading, beaconSignals, floorChanged, spotSelected, routeChanged, externalUrl, error)
+      val canGoBack = pigeonVar_list[14] as Boolean?
+      return NativeMapViewEvent(viewId, type, ready, loadState, positioningStatus, position, capabilities, motionHeading, beaconSignals, floorChanged, spotSelected, routeChanged, externalUrl, error, canGoBack)
     }
   }
   fun toList(): List<Any?> {
@@ -1403,6 +1446,7 @@ data class NativeMapViewEvent (
       routeChanged,
       externalUrl,
       error,
+      canGoBack,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -1413,7 +1457,7 @@ data class NativeMapViewEvent (
       return true
     }
     val other = other as NativeMapViewEvent
-    return MessagesPigeonUtils.deepEquals(this.viewId, other.viewId) && MessagesPigeonUtils.deepEquals(this.type, other.type) && MessagesPigeonUtils.deepEquals(this.ready, other.ready) && MessagesPigeonUtils.deepEquals(this.loadState, other.loadState) && MessagesPigeonUtils.deepEquals(this.positioningStatus, other.positioningStatus) && MessagesPigeonUtils.deepEquals(this.position, other.position) && MessagesPigeonUtils.deepEquals(this.capabilities, other.capabilities) && MessagesPigeonUtils.deepEquals(this.motionHeading, other.motionHeading) && MessagesPigeonUtils.deepEquals(this.beaconSignals, other.beaconSignals) && MessagesPigeonUtils.deepEquals(this.floorChanged, other.floorChanged) && MessagesPigeonUtils.deepEquals(this.spotSelected, other.spotSelected) && MessagesPigeonUtils.deepEquals(this.routeChanged, other.routeChanged) && MessagesPigeonUtils.deepEquals(this.externalUrl, other.externalUrl) && MessagesPigeonUtils.deepEquals(this.error, other.error)
+    return MessagesPigeonUtils.deepEquals(this.viewId, other.viewId) && MessagesPigeonUtils.deepEquals(this.type, other.type) && MessagesPigeonUtils.deepEquals(this.ready, other.ready) && MessagesPigeonUtils.deepEquals(this.loadState, other.loadState) && MessagesPigeonUtils.deepEquals(this.positioningStatus, other.positioningStatus) && MessagesPigeonUtils.deepEquals(this.position, other.position) && MessagesPigeonUtils.deepEquals(this.capabilities, other.capabilities) && MessagesPigeonUtils.deepEquals(this.motionHeading, other.motionHeading) && MessagesPigeonUtils.deepEquals(this.beaconSignals, other.beaconSignals) && MessagesPigeonUtils.deepEquals(this.floorChanged, other.floorChanged) && MessagesPigeonUtils.deepEquals(this.spotSelected, other.spotSelected) && MessagesPigeonUtils.deepEquals(this.routeChanged, other.routeChanged) && MessagesPigeonUtils.deepEquals(this.externalUrl, other.externalUrl) && MessagesPigeonUtils.deepEquals(this.error, other.error) && MessagesPigeonUtils.deepEquals(this.canGoBack, other.canGoBack)
   }
 
   override fun hashCode(): Int {
@@ -1432,10 +1476,11 @@ data class NativeMapViewEvent (
     result = 31 * result + MessagesPigeonUtils.deepHash(this.routeChanged)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.externalUrl)
     result = 31 * result + MessagesPigeonUtils.deepHash(this.error)
+    result = 31 * result + MessagesPigeonUtils.deepHash(this.canGoBack)
     return result
   }
   override fun toString(): String {
-    return "NativeMapViewEvent(viewId=$viewId, type=$type, ready=$ready, loadState=$loadState, positioningStatus=$positioningStatus, position=$position, capabilities=$capabilities, motionHeading=$motionHeading, beaconSignals=$beaconSignals, floorChanged=$floorChanged, spotSelected=$spotSelected, routeChanged=$routeChanged, externalUrl=$externalUrl, error=$error)"
+    return "NativeMapViewEvent(viewId=$viewId, type=$type, ready=$ready, loadState=$loadState, positioningStatus=$positioningStatus, position=$position, capabilities=$capabilities, motionHeading=$motionHeading, beaconSignals=$beaconSignals, floorChanged=$floorChanged, spotSelected=$spotSelected, routeChanged=$routeChanged, externalUrl=$externalUrl, error=$error, canGoBack=$canGoBack)"
   }
 }
 private open class MessagesPigeonCodec : StandardMessageCodec() {
@@ -1548,10 +1593,15 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
       }
       150.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
-          NativePositioningEvent.fromList(it)
+          NativeGoBackResult.fromList(it)
         }
       }
       151.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          NativePositioningEvent.fromList(it)
+        }
+      }
+      152.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           NativeMapViewEvent.fromList(it)
         }
@@ -1645,12 +1695,16 @@ private open class MessagesPigeonCodec : StandardMessageCodec() {
         stream.write(149)
         writeValue(stream, value.toList())
       }
-      is NativePositioningEvent -> {
+      is NativeGoBackResult -> {
         stream.write(150)
         writeValue(stream, value.toList())
       }
-      is NativeMapViewEvent -> {
+      is NativePositioningEvent -> {
         stream.write(151)
+        writeValue(stream, value.toList())
+      }
+      is NativeMapViewEvent -> {
+        stream.write(152)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -1685,6 +1739,7 @@ interface MetamapsHostApi {
   fun setMapViewCenterReticleEnabled(viewId: Long, enabled: Boolean, callback: (Result<NativeOperationResult>) -> Unit)
   fun requestMapViewCenterReticleCandidate(viewId: Long, callback: (Result<NativeMapCenterReticleCandidateResult>) -> Unit)
   fun openMapViewExternalLink(viewId: Long, url: String, callback: (Result<NativeOperationResult>) -> Unit)
+  fun goBackMapView(viewId: Long, callback: (Result<NativeGoBackResult>) -> Unit)
 
   companion object {
     /** The codec used by MetamapsHostApi. */
@@ -2129,6 +2184,26 @@ interface MetamapsHostApi {
             val viewIdArg = args[0] as Long
             val urlArg = args[1] as String
             api.openMapViewExternalLink(viewIdArg, urlArg) { result: Result<NativeOperationResult> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MessagesPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MessagesPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.metamaps_flutter.MetamapsHostApi.goBackMapView$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val viewIdArg = args[0] as Long
+            api.goBackMapView(viewIdArg) { result: Result<NativeGoBackResult> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(MessagesPigeonUtils.wrapError(error))

@@ -35,4 +35,5 @@ kotlin {
 
 dependencies {
     implementation(project(":metamaps-mapview"))
+    implementation("androidx.activity:activity:1.13.0")
 }

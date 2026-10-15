@@ -2,6 +2,7 @@ package jp.metamaps.samples.compose
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +35,11 @@ class MainActivity : ComponentActivity() {
                 val mapLoading = stringResource(R.string.map_loading)
                 var status by remember { mutableStateOf(mapLoading) }
                 var mapView by remember { mutableStateOf<MetamapsMapView?>(null) }
+                var mapCanGoBack by remember { mutableStateOf(false) }
+
+                // Back first closes what the map opened, such as a spot, as the browser's back button does on the
+                // web. Once the map has nothing to close, back leaves this activity as usual.
+                BackHandler(enabled = mapCanGoBack) { mapView?.goBack() }
 
                 DisposableEffect(Unit) {
                     onDispose { mapView?.dispose() }
@@ -50,6 +56,9 @@ class MainActivity : ComponentActivity() {
                                     ),
                                 )
                                 view.eventListener = { event ->
+                                    if (event is MetamapsMapViewEvent.CanGoBackChanged) {
+                                        mapCanGoBack = event.canGoBack
+                                    }
                                     status = when (event) {
                                         is MetamapsMapViewEvent.Error ->
                                             "${event.error.code.wireValue}: ${event.error.message}"

@@ -22,6 +22,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -287,8 +289,7 @@ class MetamapsPlugin :
                         },
                     )
                 }.getOrElse { error ->
-                    if (error is CancellationException) throw error
-                    NativeMapCenterReticleCandidateResult(error = error.toFlutterError())
+                    NativeMapCenterReticleCandidateResult(error = error.toOperationError())
                 }
             }
             complete(callback, result)
@@ -300,6 +301,19 @@ class MetamapsPlugin :
         url: String,
         callback: (Result<NativeOperationResult>) -> Unit,
     ) = mapViewOperation(viewId, callback) { openExternalLink(URI.create(url)) }
+
+    override fun goBackMapView(viewId: Long, callback: (Result<NativeGoBackResult>) -> Unit) {
+        runOnMain {
+            val view = mapViews[viewId]
+            callback(Result.success(
+                if (view == null) {
+                    NativeGoBackResult(wentBack = false, error = missingOwner("mapView", viewId))
+                } else {
+                    NativeGoBackResult(wentBack = view.goBack())
+                },
+            ))
+        }
+    }
 
     internal fun emit(event: NativeEvent) {
         events.emit(event)
@@ -359,8 +373,7 @@ class MetamapsPlugin :
                     entry.client.block()
                     NativeOperationResult()
                 }.getOrElse { error ->
-                    if (error is CancellationException) throw error
-                    NativeOperationResult(error = error.toFlutterError())
+                    NativeOperationResult(error = error.toOperationError())
                 }
             }
             complete(callback, result)
@@ -402,8 +415,7 @@ class MetamapsPlugin :
                     view.block()
                     NativeOperationResult()
                 }.getOrElse { error ->
-                    if (error is CancellationException) throw error
-                    NativeOperationResult(error = error.toFlutterError())
+                    NativeOperationResult(error = error.toOperationError())
                 }
             }
             complete(callback, result)
@@ -433,6 +445,15 @@ class MetamapsPlugin :
             }
             complete(callback, result)
         }
+    }
+
+    /**
+     * Dart waits for every reply, so only the cancellation of this plugin's own scope may end an operation silently.
+     * Any other CancellationException is answered like other failures, as the iOS plugin does.
+     */
+    private suspend fun Throwable.toOperationError(): NativeErrorMessage {
+        if (this is CancellationException) currentCoroutineContext().ensureActive()
+        return toFlutterError()
     }
 
     private fun <T> complete(callback: (Result<T>) -> Unit, value: T) {

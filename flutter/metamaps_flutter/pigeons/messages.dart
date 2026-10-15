@@ -313,6 +313,13 @@ class NativeRouteChangedEvent {
   bool active;
 }
 
+class NativeGoBackResult {
+  NativeGoBackResult({required this.wentBack, this.error});
+
+  bool wentBack;
+  NativeErrorMessage? error;
+}
+
 sealed class NativeEvent {}
 
 class NativePositioningEvent extends NativeEvent {
@@ -353,6 +360,7 @@ class NativeMapViewEvent extends NativeEvent {
     this.routeChanged,
     this.externalUrl,
     this.error,
+    this.canGoBack,
   });
 
   int viewId;
@@ -369,6 +377,7 @@ class NativeMapViewEvent extends NativeEvent {
   NativeRouteChangedEvent? routeChanged;
   String? externalUrl;
   NativeErrorMessage? error;
+  bool? canGoBack;
 }
 
 @HostApi()
@@ -448,6 +457,9 @@ abstract class MetamapsHostApi {
 
   @async
   NativeOperationResult openMapViewExternalLink(int viewId, String url);
+
+  @async
+  NativeGoBackResult goBackMapView(int viewId);
 }
 
 @FlutterApi()

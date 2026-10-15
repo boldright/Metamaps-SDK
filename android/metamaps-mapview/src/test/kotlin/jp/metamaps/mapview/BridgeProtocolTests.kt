@@ -12,6 +12,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class BridgeProtocolTests {
@@ -148,6 +149,19 @@ class BridgeProtocolTests {
         assertEquals("map.error: spot_not_found", error.debugDetail)
         assertEquals("unknown", mapError(mapOf("code" to "<b>x</b>")).mapErrorCode)
         assertEquals("unknown", mapError(null).mapErrorCode)
+    }
+
+    @Test
+    fun shareRequestSendsTheTitleAndTheUrlAsTheWebMapCopiesThem() {
+        fun share(payload: Map<String, Any?>) =
+            BridgeEnvelope(BridgeEnvelope.SCHEMA, "1.6", "map.share", mapId, groupId, 1, payload).shareRequest
+
+        val spotUrl = "https://metamaps.jp/d/demo?spot=6Y6SSBY5"
+        assertEquals("Demo - Cafe\n$spotUrl", share(mapOf("url" to spotUrl, "text" to "Demo - Cafe"))?.body)
+        val pinUrl = "https://metamaps.jp/d/demo?pin=35.6812362,139.7671248&floor=1F"
+        assertEquals(pinUrl, share(mapOf("url" to pinUrl))?.body)
+        assertNull(share(mapOf("url" to "javascript:alert(1)")))
+        assertNull(share(mapOf("url" to spotUrl, "text" to 3)))
     }
 
     @Test

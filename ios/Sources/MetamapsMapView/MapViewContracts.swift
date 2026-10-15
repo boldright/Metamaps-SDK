@@ -77,7 +77,23 @@ func shouldAutomaticallyGrantMetamapsMicrophonePermission(
     isMainFrame: Bool,
     isMicrophoneOnly: Bool
 ) -> Bool {
-    guard isMainFrame, isMicrophoneOnly,
+    isMicrophoneOnly && isConfiguredMetamapsMainFrameOrigin(
+        baseURL: baseURL,
+        requestingScheme: requestingScheme,
+        requestingHost: requestingHost,
+        requestingPort: requestingPort,
+        isMainFrame: isMainFrame)
+}
+
+/// Whether a permission request comes from the main frame of the configured HTTPS map origin.
+func isConfiguredMetamapsMainFrameOrigin(
+    baseURL: URL,
+    requestingScheme: String,
+    requestingHost: String,
+    requestingPort: Int,
+    isMainFrame: Bool
+) -> Bool {
+    guard isMainFrame,
           baseURL.scheme?.lowercased() == "https",
           let configuredOrigin = MetamapsWebOrigin(url: baseURL)
     else { return false }
@@ -86,6 +102,42 @@ func shouldAutomaticallyGrantMetamapsMicrophonePermission(
         scheme: requestingScheme,
         host: requestingHost,
         port: requestingPort)
+}
+
+/// The frame a navigation action loads into.
+enum MetamapsNavigationTarget: Equatable, Sendable {
+    case mainFrame
+    case subframe
+    /// `targetFrame == nil`: a new window.
+    case newWindow
+}
+
+enum MetamapsNavigationActionPolicy: Equatable, Sendable {
+    case allow
+    /// Cancels the navigation and hands the URL to the external link flow.
+    case openExternally
+    case cancel
+}
+
+/// The main frame stays on the configured map origin. A subframe may also show an HTTPS page, such as a
+/// YouTube embed in rich text; the native bridge stays limited to the main frame.
+func metamapsNavigationActionPolicy(
+    baseURL: URL,
+    url: URL,
+    target: MetamapsNavigationTarget
+) -> MetamapsNavigationActionPolicy {
+    if url.scheme?.lowercased() == "about" { return .allow }
+    if let configuredOrigin = MetamapsWebOrigin(url: baseURL),
+       configuredOrigin == MetamapsWebOrigin(url: url) {
+        return .allow
+    }
+    switch target {
+    case .mainFrame: return .openExternally
+    case .subframe: return url.scheme?.lowercased() == "https" ? .allow : .cancel
+    // Allowing a new window lets WebKit call createWebViewWith, which opens the URL outside the web view once and
+    // returns no web view. Cancelling here would drop the link before it reaches the host (15 §3).
+    case .newWindow: return .allow
+    }
 }
 
 func isValidMetamapsSpotStableKey(_ value: String) -> Bool {
@@ -331,7 +383,8 @@ func makeMetamapsUserAgent(applicationVersion: String, appendix: String?) -> Str
     return "\(base) \(appendix)"
 }
 
-/// The load state of the embedded WebView's main frame.
+/// The load state of the embedded WebView's main frame. After `.failed`, call `MetamapsMapView.reload()` to
+/// recover; the view does not reload on its own.
 public enum MapViewLoadState: String, Codable, Sendable {
     case idle, loading, loaded, failed, disposed
 }
@@ -395,12 +448,18 @@ public enum MetamapsMapViewEvent: Sendable {
     case position(PositioningUpdate)
     /// On-device diagnostics about registered beacons and the estimated position. Not sent to any server.
     case beaconSignals([BeaconSignalReading])
+    /// The web map asked for positioning permissions. Sent only when `positioningPolicy` is `.hostControlled`.
     case positioningAuthorizationRequested
+    /// The web map asked to start positioning. Sent only when `positioningPolicy` is `.hostControlled`.
     case positioningStartRequested
     case floorChanged(FloorChangedEvent)
     case spotSelected(SpotSelectedEvent)
     case routeChanged(RouteChangedEvent)
+    /// A link left the map. Sent before the delegate decides and the SDK opens the link. For observation only: handle
+    /// links in `decideExternalLink`, not from this event.
     case externalLinkRequested(URL)
+    /// Whether the web map has a step that going back closes changed. See `MetamapsMapView.canGoBack`.
+    case canGoBackChanged(Bool)
     case error(MetamapsError)
 }
 

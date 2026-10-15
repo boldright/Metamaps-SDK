@@ -50,6 +50,18 @@ class MapLoadPolicyTests {
         assertTrue(shouldInitialDocumentRequestTimeout(responseObserved = false))
         assertFalse(shouldInitialDocumentRequestTimeout(responseObserved = true))
     }
+
+    @Test
+    fun onlyTlsErrorsForTheMainFrameDocumentFailTheMap() {
+        val mainFrameUrl = URI.create("https://metamaps.jp/d/demo?lang=ja")
+        assertTrue(isMainFrameDocumentUrl("https://metamaps.jp/d/demo?lang=ja", mainFrameUrl))
+        assertTrue(isMainFrameDocumentUrl("https://METAMAPS.jp:443/d/demo", mainFrameUrl))
+
+        assertFalse(isMainFrameDocumentUrl("https://metamaps.jp/assets/app.js", mainFrameUrl))
+        assertFalse(isMainFrameDocumentUrl("https://cdn.example.com/d/demo", mainFrameUrl))
+        assertFalse(isMainFrameDocumentUrl(null, mainFrameUrl))
+        assertFalse(isMainFrameDocumentUrl("https://metamaps.jp/d/demo", null))
+    }
 }
 
 /** Prevents URL overrides, external schemes, and diagnostic UA markers from regressing silently. */
