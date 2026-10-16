@@ -81,9 +81,10 @@ because the SDK links Core Location and Core Motion.
 On Android, a map-only app needs no permission entries: the native libraries add only `INTERNET`. Apps that use
 indoor positioning declare the location, Bluetooth, and activity recognition permissions in their own manifest; the
 developer guide has the exact block. The SDK never shows a permission dialog from `load` or `configure`. Maps that
-show the user's location with GPS also need `ACCESS_FINE_LOCATION`: the map view lets the map read the device
-location only after your app has been granted it, and never asks for it. Voice input works the same way with
-`RECORD_AUDIO`; without it, the map hides its microphone button on Android.
+show the user's location with GPS also need `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input
+needs `RECORD_AUDIO`. When the user taps the location button or the microphone before your app holds the permission,
+the map calls `onPermissionRequest`; answer `MapPermissionAnswer.showDialog` to let the plugin show the OS dialog. Without the `RECORD_AUDIO`
+declaration, the map hides its microphone button on Android.
 
 ## Map view
 

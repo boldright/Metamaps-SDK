@@ -28,6 +28,9 @@ internal class FlutterMapViewFactory(
             owner.decideMapViewExternalLink(id, uri, nativeView)
             MetamapsExternalLinkDecision.HANDLED
         }
+        nativeView.permissionRequestHandler = { request ->
+            owner.decideMapViewPermission(id, request, nativeView)
+        }
         nativeView.configure(parameters.toConfiguration())
         owner.registerMapView(id, nativeView)
         return FlutterMapView(id, nativeView, owner)

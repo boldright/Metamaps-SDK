@@ -2248,6 +2248,30 @@ class MetamapsFlutterApi(private val binaryMessenger: BinaryMessenger, private v
       }
     }
   }
+  /**
+   * Returns how Dart answers a map permission request (Android only): `showDialog`, `requestedByApp`, or `decline`.
+   * `permission` is `location` or `microphone`.
+   */
+  fun decideMapViewPermissionRequest(viewIdArg: Long, permissionArg: String, callback: (Result<String>) -> Unit)
+{
+    val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
+    val channelName = "dev.flutter.pigeon.metamaps_flutter.MetamapsFlutterApi.decideMapViewPermissionRequest$separatedMessageChannelSuffix"
+    val channel = BasicMessageChannel<Any?>(binaryMessenger, channelName, codec)
+    channel.send(listOf(viewIdArg, permissionArg)) {
+      if (it is List<*>) {
+        if (it.size > 1) {
+          callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else if (it[0] == null) {
+          callback(Result.failure(FlutterError("null-error", "Flutter api returned null value for non-null return value.", "")))
+        } else {
+          val output = it[0] as String
+          callback(Result.success(output))
+        }
+      } else {
+        callback(Result.failure(MessagesPigeonUtils.createConnectionError(channelName)))
+      }
+    }
+  }
 }
 
 private class MessagesPigeonStreamHandler<T>(

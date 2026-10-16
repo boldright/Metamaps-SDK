@@ -177,46 +177,32 @@ internal fun isSameOrigin(uri: URI, baseUrl: URI): Boolean =
         normalizedPort(uri) == normalizedPort(baseUrl)
 
 /**
- * Whether to grant a web geolocation request from [origin]. Only the configured HTTPS map origin is granted, and only
- * while the app already holds precise location permission. The SDK never asks for the permission here.
+ * Whether a web geolocation request comes from the configured HTTPS map origin. Requests from any other origin are
+ * denied; for the map's own requests, the app's location permission decides (see [mapPermissionStatus]).
  */
-internal fun shouldGrantWebGeolocation(
-    origin: String?,
-    baseUrl: URI,
-    hasPreciseLocationPermission: Boolean,
-): Boolean = hasPreciseLocationPermission && isConfiguredHttpsOrigin(origin, baseUrl)
+internal fun isMapGeolocationRequest(origin: String?, baseUrl: URI): Boolean = isConfiguredHttpsOrigin(origin, baseUrl)
 
 /**
- * Whether to grant a web permission request for [resources] from [origin]. Only microphone capture for the web map's
- * voice input is granted, from the configured HTTPS map origin, and only while the app already holds `RECORD_AUDIO`. A
- * request that includes the camera or any other resource is denied as a whole. The SDK never asks for the permission
- * here.
+ * Whether a web permission request is the map's voice input asking for the microphone: microphone capture only, from
+ * the configured HTTPS map origin. A request that includes the camera or any other resource is denied as a whole.
  */
-internal fun shouldGrantWebAudioCapture(
-    origin: String?,
-    resources: List<String>,
-    baseUrl: URI,
-    hasRecordAudioPermission: Boolean,
-): Boolean = hasRecordAudioPermission &&
+internal fun isMapMicrophoneRequest(origin: String?, resources: List<String>, baseUrl: URI): Boolean =
     resources.isNotEmpty() &&
-    resources.all { it == PermissionRequest.RESOURCE_AUDIO_CAPTURE } &&
-    isConfiguredHttpsOrigin(origin, baseUrl)
+        resources.all { it == PermissionRequest.RESOURCE_AUDIO_CAPTURE } &&
+        isConfiguredHttpsOrigin(origin, baseUrl)
 
 /**
- * Whether the map view announces voice input (`bridge.hello.payload.speechRecognition`): the microphone would be
- * granted to the map origin and the device has a speech recognition service. Derived from [shouldGrantWebAudioCapture]
- * so that the announcement cannot drift from what the map view actually grants.
+ * Whether the map view announces voice input (`bridge.hello.payload.speechRecognition`): the app declares
+ * `RECORD_AUDIO`, the device has a speech recognition service, and the map origin is one whose microphone requests the
+ * map view handles. Whether the permission is granted does not matter; the map asks the app when it is not.
  */
 internal fun isWebSpeechRecognitionAvailable(
     baseUrl: URI,
-    hasRecordAudioPermission: Boolean,
+    declaresRecordAudio: Boolean,
     hasRecognitionService: Boolean,
-): Boolean = hasRecognitionService && shouldGrantWebAudioCapture(
-    baseUrl.toString(),
-    listOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE),
-    baseUrl,
-    hasRecordAudioPermission,
-)
+): Boolean = declaresRecordAudio &&
+    hasRecognitionService &&
+    isMapMicrophoneRequest(baseUrl.toString(), listOf(PermissionRequest.RESOURCE_AUDIO_CAPTURE), baseUrl)
 
 private fun isConfiguredHttpsOrigin(origin: String?, baseUrl: URI): Boolean {
     val uri = origin?.let { runCatching { URI.create(it) }.getOrNull() } ?: return false

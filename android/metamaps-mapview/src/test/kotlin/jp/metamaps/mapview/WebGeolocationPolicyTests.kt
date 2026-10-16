@@ -10,19 +10,14 @@ class WebGeolocationPolicyTests {
     private val baseUrl = URI.create("https://metamaps.jp")
 
     @Test
-    fun grantsOnlyTheConfiguredHttpsMapOriginWhileTheAppHoldsLocationPermission() {
-        assertTrue(shouldGrantWebGeolocation("https://metamaps.jp/", baseUrl, hasPreciseLocationPermission = true))
-        assertTrue(shouldGrantWebGeolocation("https://METAMAPS.jp:443/", baseUrl, hasPreciseLocationPermission = true))
+    fun handlesOnlyRequestsFromTheConfiguredHttpsMapOrigin() {
+        assertTrue(isMapGeolocationRequest("https://metamaps.jp/", baseUrl))
+        assertTrue(isMapGeolocationRequest("https://METAMAPS.jp:443/", baseUrl))
 
-        assertFalse(shouldGrantWebGeolocation("https://metamaps.jp/", baseUrl, hasPreciseLocationPermission = false))
-        assertFalse(shouldGrantWebGeolocation("https://example.com/", baseUrl, hasPreciseLocationPermission = true))
-        assertFalse(shouldGrantWebGeolocation("https://metamaps.jp:8443/", baseUrl, hasPreciseLocationPermission = true))
-        assertFalse(shouldGrantWebGeolocation("http://metamaps.jp/", baseUrl, hasPreciseLocationPermission = true))
-        assertFalse(shouldGrantWebGeolocation(null, baseUrl, hasPreciseLocationPermission = true))
-
-        val localBaseUrl = URI.create("http://localhost:8080")
-        assertFalse(
-            shouldGrantWebGeolocation("http://localhost:8080/", localBaseUrl, hasPreciseLocationPermission = true),
-        )
+        assertFalse(isMapGeolocationRequest("https://example.com/", baseUrl))
+        assertFalse(isMapGeolocationRequest("https://metamaps.jp:8443/", baseUrl))
+        assertFalse(isMapGeolocationRequest("http://metamaps.jp/", baseUrl))
+        assertFalse(isMapGeolocationRequest(null, baseUrl))
+        assertFalse(isMapGeolocationRequest("http://localhost:8080/", URI.create("http://localhost:8080")))
     }
 }

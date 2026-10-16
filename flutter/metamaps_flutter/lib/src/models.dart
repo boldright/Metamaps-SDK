@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// The version of this plugin and the native Metamaps SDKs bundled with it. It is not the Flutter SDK version.
-const String metamapsSdkVersion = '0.7.0';
+const String metamapsSdkVersion = '0.8.0';
 
 /// The production origin for the map and the positioning manifest when no origin is specified.
 final Uri metamapsProductionBaseUrl = Uri(scheme: 'https', host: 'metamaps.jp');
@@ -139,6 +139,7 @@ enum MetamapsErrorCode {
   bluetoothDisabled('bluetoothDisabled'),
   bleUnsupported('bleUnsupported'),
   motionPermissionDenied('motionPermissionDenied'),
+  microphonePermissionDenied('microphonePermissionDenied'),
   scanStartFailed('scanStartFailed'),
   scanRuntimeFailed('scanRuntimeFailed'),
   noRegisteredBeacons('noRegisteredBeacons'),
@@ -158,6 +159,47 @@ enum MetamapsErrorCode {
     (item) => item.wireValue == value,
     orElse: () => unknown,
   );
+}
+
+/// A map feature that needs an Android runtime permission from the app.
+enum MapPermission {
+  /// GPS location in the map. Request `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` together.
+  location('location'),
+
+  /// Voice input in the map's search field and AI chat. Request `RECORD_AUDIO`.
+  microphone('microphone'),
+  unknown('unknown');
+
+  const MapPermission(this.wireValue);
+  final String wireValue;
+
+  static MapPermission fromWire(String value) => values.firstWhere(
+    (item) => item.wireValue == value,
+    orElse: () => unknown,
+  );
+}
+
+/// How the app answers a [MapPermissionRequest]. In every case, the map reads the permission state afterwards.
+enum MapPermissionAnswer {
+  /// The plugin shows the OS permission dialog from the attached Activity.
+  showDialog('showDialog'),
+
+  /// The app has already requested the permission itself, for example with the `permission_handler` package.
+  requestedByApp('requestedByApp'),
+
+  /// The app leaves the permission as it is, for example when the user turned down its own explanation.
+  decline('decline');
+
+  const MapPermissionAnswer(this.wireValue);
+  final String wireValue;
+}
+
+/// A request from the map for a permission that the app declares but has not been granted. Android only.
+final class MapPermissionRequest {
+  const MapPermissionRequest(this.permission);
+
+  /// The map feature that asks for the permission.
+  final MapPermission permission;
 }
 
 /// Who handles a positioning start request from the web map.

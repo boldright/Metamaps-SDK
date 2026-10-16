@@ -48,12 +48,13 @@ Add these purpose strings to `Info.plist`, even if you only show maps:
 <string>Motion data keeps your location up to date while you walk.</string>
 ```
 
-The microphone and speech recognition keys are used by the map's voice input. The location key is used when the
-map shows the user's location: by GPS location on maps that enable it, and by indoor positioning. On a map with GPS
-location enabled, the system asks for location permission the first time the user taps the location button in the
-map. The motion key is used only by indoor positioning, and the system asks for it only when positioning starts.
-App Store Connect checks for the location and motion keys because the SDK links Core Location and Core Motion. The
-SDK does not use Core Bluetooth directly, so it does not need `NSBluetoothAlwaysUsageDescription`.
+The microphone and speech recognition keys are used by the map's voice input; without either one, the map hides its
+microphone button. The location key is used when the map shows the user's location: by GPS location on maps that
+enable it, and by indoor positioning. On a map with GPS location enabled, the system asks for location permission
+the first time the user taps the location button in the map. The motion key is used only by indoor positioning, and
+the system asks for it only when positioning starts. App Store Connect checks for the location and motion keys
+because the SDK links Core Location and Core Motion. The SDK does not use Core Bluetooth directly, so it does not
+need `NSBluetoothAlwaysUsageDescription`.
 
 ## Map view
 

@@ -2406,6 +2406,10 @@ abstract class MetamapsFlutterApi {
 
   Future<bool> decideMapViewExternalLinkOpensDefault(int viewId, String url);
 
+  /// Returns how Dart answers a map permission request (Android only): `showDialog`, `requestedByApp`, or `decline`.
+  /// `permission` is `location` or `microphone`.
+  Future<String> decideMapViewPermissionRequest(int viewId, String permission);
+
   static void setUp(
     MetamapsFlutterApi? api, {
     BinaryMessenger? binaryMessenger,
@@ -2431,6 +2435,35 @@ abstract class MetamapsFlutterApi {
             final bool output = await api.decideMapViewExternalLinkOpensDefault(
               arg_viewId,
               arg_url,
+            );
+            return wrapResponse(result: output);
+          } on PlatformException catch (e) {
+            return wrapResponse(error: e);
+          } catch (e) {
+            return wrapResponse(
+              error: PlatformException(code: 'error', message: e.toString()),
+            );
+          }
+        });
+      }
+    }
+    {
+      final pigeonVar_channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.metamaps_flutter.MetamapsFlutterApi.decideMapViewPermissionRequest$messageChannelSuffix',
+        pigeonChannelCodec,
+        binaryMessenger: binaryMessenger,
+      );
+      if (api == null) {
+        pigeonVar_channel.setMessageHandler(null);
+      } else {
+        pigeonVar_channel.setMessageHandler((Object? message) async {
+          final List<Object?> args = message! as List<Object?>;
+          final int arg_viewId = args[0]! as int;
+          final String arg_permission = args[1]! as String;
+          try {
+            final String output = await api.decideMapViewPermissionRequest(
+              arg_viewId,
+              arg_permission,
             );
             return wrapResponse(result: output);
           } on PlatformException catch (e) {

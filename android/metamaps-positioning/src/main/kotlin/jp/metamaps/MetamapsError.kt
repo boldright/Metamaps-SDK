@@ -40,6 +40,7 @@ data class MetamapsError(
         BLUETOOTH_DISABLED("bluetoothDisabled"),
         BLE_UNSUPPORTED("bleUnsupported"),
         MOTION_PERMISSION_DENIED("motionPermissionDenied"),
+        MICROPHONE_PERMISSION_DENIED("microphonePermissionDenied"),
         SCAN_START_FAILED("scanStartFailed"),
         SCAN_RUNTIME_FAILED("scanRuntimeFailed"),
         NO_REGISTERED_BEACONS("noRegisteredBeacons"),
@@ -65,7 +66,7 @@ data class MetamapsError(
 
 /** Version and endpoint information of the bundled Android SDK. */
 object MetamapsSdk {
-    const val VERSION = "0.7.0"
+    const val VERSION = "0.8.0"
 
     /** The production origin for the map and the positioning manifest when no origin is specified. */
     val PRODUCTION_BASE_URL: URI = URI.create("https://metamaps.jp")

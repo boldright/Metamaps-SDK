@@ -628,7 +628,8 @@ public final class MetamapsMapView: UIView {
             sdkVersion: MetamapsSDK.version,
             platform: "ios",
             capabilities: capabilities,
-            automaticPositioning: automaticPositioning), completion: completion)
+            automaticPositioning: automaticPositioning,
+            speechRecognition: Self.speechRecognitionDeclared), completion: completion)
     }
 
     /// Whether this map view runs automatic positioning (`bridge.hello.payload.automaticPositioning`).
@@ -907,6 +908,9 @@ public final class MetamapsMapView: UIView {
     }
 
     private static let messageHandlerName = "metamapNative"
+    /// `Info.plist` does not change while the app runs, so it is read once.
+    private static let speechRecognitionDeclared = isMetamapsSpeechRecognitionDeclared(
+        infoDictionary: Bundle.main.infoDictionary)
     private static let bootstrapScript = """
     (() => {
       if (window.MetamapNativeBridge) return;
@@ -930,6 +934,8 @@ private struct BridgeHelloPayload: Encodable {
     let capabilities: CapabilityReport
     /// Backward-compatible addition in bridge 1.4. `true` only for map views configured for automatic positioning.
     let automaticPositioning: Bool
+    /// Backward-compatible addition in bridge 1.5. The web map hides its microphone button when false.
+    let speechRecognition: Bool
 }
 
 private struct OptionalIdPayload: Encodable {

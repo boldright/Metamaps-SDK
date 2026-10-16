@@ -6775,198 +6775,198 @@
   },
   "ConstValues": [
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/AutomaticPositioningPolicy.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/AutomaticPositioningPolicy.swift",
       "kind": "IntegerLiteral",
       "offset": 145,
       "length": 6,
       "value": "10000"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/AutomaticPositioningPolicy.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/AutomaticPositioningPolicy.swift",
       "kind": "IntegerLiteral",
       "offset": 285,
       "length": 6,
       "value": "30000"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
       "kind": "StringLiteral",
       "offset": 1741,
       "length": 26,
       "value": "\"metamap.native-bridge.v1\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
       "kind": "StringLiteral",
       "offset": 2357,
       "length": 5,
       "value": "\"1.6\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
       "kind": "BooleanLiteral",
       "offset": 4170,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/BridgeProtocol.swift",
       "kind": "IntegerLiteral",
       "offset": 4226,
       "length": 2,
       "value": "-1"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 7886,
+      "offset": 8533,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "Dictionary",
-      "offset": 7937,
+      "offset": 8584,
       "length": 3,
       "value": "[]"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 8083,
+      "offset": 8730,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 9277,
+      "offset": 9924,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "Dictionary",
-      "offset": 9328,
+      "offset": 9975,
       "length": 3,
       "value": "[]"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 9474,
+      "offset": 10121,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 14228,
+      "offset": 14875,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 14288,
+      "offset": 14935,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 14371,
+      "offset": 15018,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 14445,
+      "offset": 15092,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 14541,
+      "offset": 15188,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "BooleanLiteral",
-      "offset": 14601,
+      "offset": 15248,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MapViewContracts.swift",
       "kind": "Array",
-      "offset": 15120,
+      "offset": 15767,
       "length": 55,
       "value": "[\"http\", \"https\", \"tel\", \"mailto\", \"sms\", \"geo\"]"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 1798,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "IntegerLiteral",
       "offset": 2392,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "Dictionary",
       "offset": 2655,
       "length": 3,
       "value": "[]"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "IntegerLiteral",
       "offset": 2811,
       "length": 1,
       "value": "0"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 2940,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "BooleanLiteral",
       "offset": 9145,
       "length": 4,
       "value": "true"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "BooleanLiteral",
-      "offset": 43858,
+      "offset": 43921,
       "length": 5,
       "value": "false"
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "StringLiteral",
-      "offset": 44956,
+      "offset": 45019,
       "length": 15,
       "value": "\"metamapNative\""
     },
     {
-      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.sKnMQX\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
+      "filePath": "\/private\/var\/folders\/_f\/nsnk6gz15cj5czsyyy7tgy2m0000gn\/T\/metamaps-ios-distribution.wsEj5p\/Metamaps\/Sources\/Metamaps\/MetamapsMapView.swift",
       "kind": "StringLiteral",
-      "offset": 45013,
+      "offset": 45293,
       "length": 523,
       "value": "\"(() => {\n  if (window.MetamapNativeBridge) return;\n  Object.defineProperty(window, 'MetamapNativeBridge', {\n    value: Object.freeze({\n      postMessage(message) {\n        window.webkit.messageHandlers.metamapNative.postMessage(message);\n      }\n    }), configurable: false, writable: false\n  });\n  window.__metamapsReceiveNativeMessage = function(message) {\n    window.dispatchEvent(new CustomEvent('metamap:native-message', { detail: message }));\n  };\n})();\""
     }

@@ -41,6 +41,7 @@ import jp.metamaps.MetamapsError
 import jp.metamaps.MetamapsSdk
 import jp.metamaps.MetamapsUserAction
 import jp.metamaps.positioning.PositionEstimate
+import jp.metamaps.positioning.android.ActivityPermissionRequester
 import jp.metamaps.positioning.android.BeaconSignalReading
 import jp.metamaps.positioning.android.CapabilityReport
 import jp.metamaps.positioning.android.LocationAuthorizationState
@@ -85,8 +86,12 @@ import org.json.JSONObject
  * - Host commands such as [selectFloor], [showSpot], [setDestination], and [setLanguage] throw a [MetamapsError]
  *   with `BRIDGE_HANDSHAKE_FAILED` until [MetamapsMapViewEvent.Ready]. They throw again from the moment the WebView
  *   starts loading another page, such as after [setLanguage] or [reload], until the next `Ready`.
- * - Map-only features need permissions that your app requests itself; the SDK never shows a permission dialog for
- *   them. GPS location in the map needs `ACCESS_FINE_LOCATION`, and voice input needs `RECORD_AUDIO`.
+ * - GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input needs
+ *   `RECORD_AUDIO`, declared in your app's manifest. When the map uses one of them before it is granted, the view
+ *   asks your app through [permissionRequestHandler]; the SDK never shows a permission dialog for them on its own.
+ * - The page's safe area (`env(safe-area-inset-*)`) gets only the system bars and display cutout that overlap this
+ *   view, on Android 11 and later. Pad the parent, consume the insets, or draw the map edge to edge; the map does not
+ *   add the space twice.
  */
 @SuppressLint("SetJavaScriptEnabled")
 class MetamapsMapView @JvmOverloads constructor(
@@ -135,6 +140,9 @@ class MetamapsMapView @JvmOverloads constructor(
     /** Whether voice input was last announced in `bridge.hello` as available. */
     private var lastSentSpeechRecognition: Boolean? = null
     private var windowVisible = false
+    /** Map permission requests waiting for the host. The first one has been passed to the host once `presented`. */
+    private val pendingPermissions = ArrayDeque<PendingMapPermission>()
+    private val declaredPermissions by lazy { PermissionRequirements.declaredPermissions(context) }
     private val pendingCenterReticleRequests = mutableMapOf<UUID, CompletableDeferred<MapCenterReticleCandidate?>>()
     private var beaconSignalPresentationScheduled = false
     private val beaconSignalPresentation = Runnable {
@@ -177,6 +185,15 @@ class MetamapsMapView @JvmOverloads constructor(
      * either way, so do not open the link again from that event.
      */
     var externalLinkHandler: ((URI) -> MetamapsExternalLinkDecision)? = null
+
+    /**
+     * Receives the map's requests for a permission that your app declares but has not been granted, such as when the
+     * user taps the location button or the microphone. Answer each request once with
+     * [MetamapsMapPermissionRequest.request], [MetamapsMapPermissionRequest.finish], or
+     * [MetamapsMapPermissionRequest.decline]; the map waits until then, and the view passes you one request at a time. When this is `null`, the view denies such requests at once. Either
+     * way, a denied request emits [MetamapsMapViewEvent.Error] with the `userAction` your app's guidance should follow.
+     */
+    var permissionRequestHandler: ((MetamapsMapPermissionRequest) -> Unit)? = null
 
     init {
         configureWebView()
@@ -274,8 +291,7 @@ class MetamapsMapView @JvmOverloads constructor(
     /**
      * Requests the Android permissions that indoor positioning needs. It may show OS permission dialogs, so call it
      * from a user action. It never requests `RECORD_AUDIO`, and it requests location only for maps with indoor
-     * positioning. For voice input, and for GPS location in a map without indoor positioning, request the
-     * permissions yourself.
+     * positioning. Voice input and GPS location in the map ask your app through [permissionRequestHandler] instead.
      */
     suspend fun requestPositioningAuthorization(activity: Activity? = context.findActivity()) {
         ensureNotDisposed("requestPositioningAuthorization")
@@ -456,6 +472,7 @@ class MetamapsMapView @JvmOverloads constructor(
             bridgeError(MetamapsError.Code.BRIDGE_HANDSHAKE_FAILED, "MapView disposed during center reticle request"),
         )
         clearBeaconSignalPresentation()
+        denyPendingPermissions()
         webView.stopLoading()
         webView.removeJavascriptInterface(JS_INTERFACE)
         webView.webViewClient = WebViewClient()
@@ -466,6 +483,7 @@ class MetamapsMapView @JvmOverloads constructor(
         emit(MetamapsMapViewEvent.LoadState(MapViewLoadState.DISPOSED))
         eventListener = null
         externalLinkHandler = null
+        permissionRequestHandler = null
         scope.cancel()
     }
 
@@ -842,7 +860,8 @@ class MetamapsMapView @JvmOverloads constructor(
                 "capabilities" to capabilities.toPayload(),
                 // Backward-compatible addition in bridge 1.4. True only for map views configured for automatic positioning.
                 "automaticPositioning" to automaticPositioning,
-                // Backward-compatible addition in bridge 1.5. The web map hides its microphone button when false.
+                // Backward-compatible addition in bridge 1.5. The web map hides its microphone button when false, that
+                // is, only when the app does not declare RECORD_AUDIO or the device has no speech recognition service.
                 "speechRecognition" to speechRecognition,
                 // Backward-compatible addition in bridge 1.6. Android WebView has no Web Share API, so the web map
                 // sends `map.share` to the OS share sheet instead of copying the link.
@@ -873,7 +892,7 @@ class MetamapsMapView @JvmOverloads constructor(
         val baseUrl = configuration?.baseUrl ?: return false
         return isWebSpeechRecognitionAvailable(
             baseUrl,
-            PermissionRequirements.isGranted(context, Manifest.permission.RECORD_AUDIO),
+            Manifest.permission.RECORD_AUDIO in declaredPermissions,
             SpeechRecognizer.isRecognitionAvailable(context),
         )
     }
@@ -882,7 +901,7 @@ class MetamapsMapView @JvmOverloads constructor(
      * If the manifest download or permission decision finishes after the handshake, send the same `bridge.hello`
      * again to correct the automatic positioning configuration in the runtime. If the first announcement said
      * false and is never corrected, automatic positioning never starts for that page's lifetime. The same correction
-     * shows or hides the voice input button when the app's microphone permission changes.
+     * shows or hides the voice input button when the device's speech recognition service changes.
      */
     private fun refreshHelloAnnouncement() {
         if (disposed || !bridgeValidator.handshakeComplete) return
@@ -975,11 +994,147 @@ class MetamapsMapView @JvmOverloads constructor(
 
     /**
      * The app's own permission dialog closes over a visible map without changing window visibility, but the window
-     * regains focus. Re-evaluate so that a newly granted microphone shows the voice input button without a reload.
+     * regains focus. Re-evaluate so that newly granted positioning permissions reach the map without a reload.
      */
     override fun onWindowFocusChanged(hasWindowFocus: Boolean) {
         super.onWindowFocusChanged(hasWindowFocus)
         if (hasWindowFocus && !disposed) refreshPermissionDependentState()
+    }
+
+    // ── Map permissions: GPS location and voice input ─────────────────
+    /**
+     * Grants a map permission request that the app already holds, denies one the app cannot ask for, and passes the
+     * rest to [permissionRequestHandler] one at a time.
+     */
+    private fun decideMapPermission(
+        permission: MetamapsMapPermission,
+        key: Any?,
+        grant: () -> Unit,
+        deny: () -> Unit,
+    ) {
+        val status = currentPermissionStatus(permission)
+        when {
+            status == MapPermissionStatus.GRANTED -> grant()
+            status == MapPermissionStatus.NOT_DECLARED || permissionRequestHandler == null -> {
+                deny()
+                val canAskAgain = canAskAgain(permission, activity = null, requestedNow = false)
+                emit(MetamapsMapViewEvent.Error(mapPermissionDeniedError(permission, status, canAskAgain)))
+            }
+            else -> {
+                pendingPermissions.addLast(PendingMapPermission(permission, key, grant, deny))
+                presentNextPermission()
+            }
+        }
+    }
+
+    private fun presentNextPermission() {
+        val next = pendingPermissions.firstOrNull() ?: return
+        if (next.presented) return
+        val handler = permissionRequestHandler
+        if (handler == null) {
+            // The host removed its handler while the request waited.
+            settlePermission(next) { canAskAgain(next.permission, activity = null, requestedNow = false) }
+            return
+        }
+        next.presented = true
+        val request = MetamapsMapPermissionRequest(
+            next.permission,
+            onRequest = { activity -> onMain { requestPermissionFromActivity(next, activity) } },
+            onFinish = {
+                onMain {
+                    // The host asked the OS itself. Record it, as the SDK's own requests do, so that a later denial
+                    // without a rationale reads as one the OS no longer shows a dialog for.
+                    PermissionRequirements.markRequested(context, next.permission.androidPermissions)
+                    settlePermission(next) { canAskAgain(next.permission, activity = null, requestedNow = true) }
+                }
+            },
+            onDecline = {
+                onMain { settlePermission(next) { canAskAgain(next.permission, activity = null, requestedNow = false) } }
+            },
+        )
+        try {
+            handler(request)
+        } catch (error: Throwable) {
+            // Do not let a failing handler hold the map's request and every request behind it.
+            request.decline()
+            throw error
+        }
+    }
+
+    private fun requestPermissionFromActivity(entry: PendingMapPermission, activity: Activity) {
+        if (disposed) return
+        scope.launch(Dispatchers.Main.immediate) {
+            if (!entry.settled) {
+                try {
+                    ActivityPermissionRequester.request(activity, entry.permission.androidPermissions)
+                } catch (error: CancellationException) {
+                    throw error
+                } catch (_: Throwable) {
+                    // The OS state read below decides the answer.
+                }
+            }
+            settlePermission(entry) { canAskAgain(entry.permission, activity, requestedNow = true) }
+        }
+    }
+
+    /**
+     * Answers [entry] from the OS permission state after the host answered it, and every other waiting request for
+     * the same permission with it, so that one denial does not show the dialog again. Then passes on the next request.
+     */
+    private fun settlePermission(entry: PendingMapPermission, canAskAgain: () -> Boolean) {
+        if (disposed) return
+        if (!entry.settled) {
+            val status = currentPermissionStatus(entry.permission)
+            val granted = status == MapPermissionStatus.GRANTED
+            pendingPermissions
+                .filter { it.permission == entry.permission }
+                .plus(entry)
+                .forEach { it.settle(granted) }
+            if (!granted) {
+                emit(MetamapsMapViewEvent.Error(mapPermissionDeniedError(entry.permission, status, canAskAgain())))
+            }
+        }
+        pendingPermissions.remove(entry)
+        pendingPermissions.removeAll { it.settled && !it.presented }
+        presentNextPermission()
+    }
+
+    /**
+     * The WebView withdrew a request, for example because the page stopped asking. A request the host already has stays
+     * first in line until the host answers it, so that two permission dialogs never overlap.
+     */
+    private fun cancelPendingPermissions(permission: MetamapsMapPermission, key: Any?) {
+        pendingPermissions
+            .filter { it.permission == permission && (key == null || it.key === key) }
+            .forEach { it.settled = true }
+        pendingPermissions.removeAll { it.settled && !it.presented }
+    }
+
+    private fun denyPendingPermissions() {
+        val pending = pendingPermissions.toList()
+        pendingPermissions.clear()
+        pending.forEach { it.settle(false) }
+    }
+
+    private fun currentPermissionStatus(permission: MetamapsMapPermission): MapPermissionStatus = mapPermissionStatus(
+        permission,
+        isDeclared = declaredPermissions::contains,
+        isGranted = { PermissionRequirements.isGranted(context, it) },
+    )
+
+    /** Whether a new request can still show the OS dialog. See [canAskForMapPermissionAgain]. */
+    private fun canAskAgain(permission: MetamapsMapPermission, activity: Activity?, requestedNow: Boolean): Boolean {
+        val host = activity ?: context.findActivity() ?: return true
+        return canAskForMapPermissionAgain(
+            missing = permission.androidPermissions.filterNot { PermissionRequirements.isGranted(context, it) },
+            requestedNow = requestedNow,
+            showsRationale = host::shouldShowRequestPermissionRationale,
+            wasRequestedBefore = { PermissionRequirements.wasRequested(context, it) },
+        )
+    }
+
+    private fun onMain(block: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) block() else mainHandler.post(block)
     }
 
     private fun sendHostCommand(type: String, payload: Map<String, Any?>) {
@@ -1053,6 +1208,8 @@ class MetamapsMapView @JvmOverloads constructor(
         failPendingCenterReticleRequests(
             bridgeError(MetamapsError.Code.BRIDGE_HANDSHAKE_FAILED, "Map document changed during center reticle request"),
         )
+        // Permission requests belong to the document that made them. A later answer from the host does nothing.
+        denyPendingPermissions()
         bridgeValidator.reset()
         outboundSequence = 0
         pageToken = UUID.randomUUID().toString()
@@ -1249,6 +1406,7 @@ class MetamapsMapView @JvmOverloads constructor(
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) safeBrowsingEnabled = true
         }
         webView.addJavascriptInterface(nativeBridge, JS_INTERFACE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) WebViewSafeAreaInsets(webView).install()
         webView.webViewClient = MetamapsWebViewClient()
         webView.webChromeClient = MetamapsChromeClient()
         webView.setDownloadListener(DownloadListener { url, _, _, _, _ ->
@@ -1363,26 +1521,40 @@ class MetamapsMapView @JvmOverloads constructor(
             origin: String?,
             callback: GeolocationPermissions.Callback?,
         ) {
-            val baseUrl = configuration?.baseUrl
-            val allow = !disposed && baseUrl != null && shouldGrantWebGeolocation(
-                origin,
-                baseUrl,
-                PermissionRequirements.isGranted(context, Manifest.permission.ACCESS_FINE_LOCATION),
-            )
             // Do not retain the decision, so a revoked permission or a changed base URL applies to the next request.
-            callback?.invoke(origin, allow, false)
+            val grant: () -> Unit = { callback?.invoke(origin, true, false) }
+            val deny: () -> Unit = { callback?.invoke(origin, false, false) }
+            val baseUrl = configuration?.baseUrl
+            if (disposed || baseUrl == null || !isMapGeolocationRequest(origin, baseUrl)) {
+                deny()
+                return
+            }
+            decideMapPermission(MetamapsMapPermission.LOCATION, callback, grant, deny)
+        }
+
+        override fun onGeolocationPermissionsHidePrompt() {
+            cancelPendingPermissions(MetamapsMapPermission.LOCATION, key = null)
         }
 
         /** The web map's voice input asks for the microphone through `webkitSpeechRecognition`. */
         override fun onPermissionRequest(request: PermissionRequest) {
             val baseUrl = configuration?.baseUrl
-            val grant = !disposed && baseUrl != null && shouldGrantWebAudioCapture(
-                request.origin?.toString(),
-                request.resources.toList(),
-                baseUrl,
-                PermissionRequirements.isGranted(context, Manifest.permission.RECORD_AUDIO),
+            if (disposed || baseUrl == null ||
+                !isMapMicrophoneRequest(request.origin?.toString(), request.resources.toList(), baseUrl)
+            ) {
+                request.deny()
+                return
+            }
+            decideMapPermission(
+                MetamapsMapPermission.MICROPHONE,
+                request,
+                { request.grant(request.resources) },
+                { request.deny() },
             )
-            if (grant) request.grant(request.resources) else request.deny()
+        }
+
+        override fun onPermissionRequestCanceled(request: PermissionRequest) {
+            cancelPendingPermissions(MetamapsMapPermission.MICROPHONE, key = request)
         }
 
         override fun onCreateWindow(
@@ -1440,6 +1612,24 @@ class MetamapsMapView @JvmOverloads constructor(
         const val INITIAL_DOCUMENT_TIMEOUT_MS = 30_000L
         const val POPUP_DESTROY_FALLBACK_MS = 5_000L
         const val JS_INTERFACE = "MetamapNative"
+    }
+
+    /** A web permission request that waits for the host. [key] identifies the WebView request it answers. */
+    private class PendingMapPermission(
+        val permission: MetamapsMapPermission,
+        val key: Any?,
+        private val grant: () -> Unit,
+        private val deny: () -> Unit,
+    ) {
+        var presented = false
+        var settled = false
+
+        fun settle(granted: Boolean) {
+            if (settled) return
+            settled = true
+            // The WebView may have dropped the request with its document; answering a stale request does nothing.
+            runCatching { if (granted) grant() else deny() }
+        }
     }
 
     private data class LoadSession(

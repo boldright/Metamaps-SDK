@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'metamaps_flutter'
-  s.version          = '0.7.0'
+  s.version          = '0.8.0'
   s.summary          = 'Embed maps built with Metamaps in Flutter apps, with optional indoor positioning.'
   s.description      = <<-DESC
 Embed maps built with Metamaps in Flutter apps, with optional indoor positioning.

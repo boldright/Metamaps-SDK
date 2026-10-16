@@ -32,9 +32,13 @@ object PermissionRequirements {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) listOf(Manifest.permission.ACTIVITY_RECOGNITION)
         else emptyList()
 
+    /** The permissions the app's merged manifest declares with `<uses-permission>`. */
+    fun declaredPermissions(context: Context): Set<String> =
+        context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
+            .requestedPermissions.orEmpty().toSet()
+
     fun ensureDeclared(context: Context, motionPolicy: MotionPolicy) {
-        val info = context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_PERMISSIONS)
-        val declared = info.requestedPermissions.orEmpty().toSet()
+        val declared = declaredPermissions(context)
         val required = buildList {
             add(Manifest.permission.ACCESS_COARSE_LOCATION)
             add(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -101,7 +105,8 @@ object PermissionRequirements {
             !isGranted(activity, permission) &&
             !activity.shouldShowRequestPermissionRationale(permission)
 
-    private fun wasRequested(context: Context, permission: String): Boolean =
+    /** Whether the SDK, or a host through the map view, has requested [permission] from the OS before. */
+    fun wasRequested(context: Context, permission: String): Boolean =
         context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getBoolean(permission, false)
 
     private const val PREFERENCES = "jp.metamaps.positioning.permissions"

@@ -1,5 +1,77 @@
 # Changelog
 
+## 0.8.0
+
+GPS location and voice input in the map now ask your app for permission when the user taps them, instead of failing
+silently. On Android, the map no longer adds the system bars to its safe area twice.
+
+### Breaking changes
+
+- Android / Flutter: `MetamapsError.Code` (Android) and `MetamapsErrorCode` (Flutter) have a new case,
+  `MICROPHONE_PERMISSION_DENIED` / `microphonePermissionDenied`. A `when` or `switch` without a default branch no
+  longer compiles. Add a default branch.
+- Android / Flutter (Android): The map view now emits `MetamapsMapViewEvent.Error` (Flutter: `MapViewErrorEvent`)
+  when the map's request for location or the microphone is denied, also when your app sets no handler. The map stays
+  usable. If your app shows a recovery UI or calls `reload()` for every error event, handle these codes separately.
+- Android: The map shows its microphone button when your app declares `RECORD_AUDIO`, even before the permission is
+  granted. A denied permission no longer hides it. Tapping it asks your app through `permissionRequestHandler`
+  (Flutter: `onPermissionRequest`); without a handler, the map view denies the request and emits
+  `MICROPHONE_PERMISSION_DENIED`. Set a handler, or remove the `RECORD_AUDIO` declaration to hide the button.
+- iOS: The map hides its microphone button when your app's `Info.plist` lacks `NSMicrophoneUsageDescription` or
+  `NSSpeechRecognitionUsageDescription`. WebKit refused to start voice input without them.
+
+### Changes
+
+- Android: `MetamapsMapView.permissionRequestHandler` receives a `MetamapsMapPermissionRequest` when GPS location or
+  voice input in the map needs a permission your app declares but has not been granted. Call `request(activity)`
+  to show the OS dialog, `finish()` after requesting `androidPermissions` yourself, or `decline()` to leave the
+  permission as it is. The map waits for the answer and then reads the result from the OS. The view passes you one
+  request at a time, and the SDK still never shows these dialogs on its own.
+- Android: GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` in your app's manifest,
+  and voice input needs `RECORD_AUDIO`. If your app does not declare them, the map view denies the request without
+  calling your handler, and the error's `userAction` is `NONE`.
+- Android: When such a permission stays denied, the map view emits `MetamapsMapViewEvent.Error` with
+  `LOCATION_PERMISSION_DENIED`, `PRECISE_LOCATION_REQUIRED` (only approximate location is granted), or
+  `MICROPHONE_PERMISSION_DENIED`, and a `userAction` of `REQUEST_PERMISSION`, `ENABLE_PRECISE_LOCATION`, or
+  `OPEN_APP_SETTINGS`. Show your guidance from it; the map itself no longer points the user to the browser settings.
+- iOS: After the user denies location or microphone permission, the map asks the user to allow it in the device
+  settings instead of the browser settings. WebKit does not report the denial, so the map view cannot pass it to your
+  app.
+- Flutter: `MetamapsMapView.onPermissionRequest` answers the same requests on Android with a `MapPermissionAnswer`:
+  `showDialog` lets the plugin show the OS dialog, `requestedByApp` follows your own request, and `decline` leaves
+  the permission as it is. The request tells which feature asks (`MapPermission.location` or
+  `MapPermission.microphone`). Without the callback, the map's request is denied.
+- Android 11 and later: The map's safe area (`env(safe-area-inset-*)`) gets only the system bars and display cutout
+  that overlap the map view. In a host that pads the map's parent, such as a Flutter app with `SafeArea`, the search
+  bar and the Metamaps logo no longer leave the system bar height as extra space. Hosts that draw the map edge to
+  edge or consume the insets see no change. The map view updates the safe area when the map moves on the screen,
+  for example when a header appears above it.
+- The developer guides describe how to answer the map's permission requests on Android and Flutter, what each
+  `userAction` means, and the `Info.plist` keys for voice input on iOS.
+
+### Changes in the hosted map
+
+These apply to every SDK version, including 0.7.0, because the map is served by Metamaps:
+
+- After the user denies location or microphone permission, the map no longer points to the browser settings inside
+  a map view. On Android, it says that the feature is not available and leaves the guidance to your app; SDK 0.8.0
+  passes the denial to your app as an error event. On iOS, it asks the user to allow it in the device settings.
+- In a map view, tapping the location button again after a denial asks for the permission again instead of only
+  showing a message.
+- The map no longer hides its microphone button after voice input is denied. It hides it only when the map view
+  reports that voice input is unavailable.
+- When voice input fails outside the AI chat, the whole message now appears as a notice. It was cut off in the
+  search field.
+- GPS location no longer fails while the user is still answering the location permission prompt. The 8-second limit
+  for the first location starts once the permission is granted.
+- On Android, the system back gesture no longer places a share pin at the edge of the map where the gesture started.
+- In the voice guide, dragging or tapping the seek bar during playback no longer shows the loading icon on top of
+  the pause icon.
+- In the expanded AI chat, buttons at the bottom of the latest answer, such as Route guidance, can be tapped again.
+  The drag area at the bottom of the chat covered them.
+- On phones, the location button stays clear of the home indicator and the navigation bar when no sheet is open, as
+  the Metamaps logo does.
+
 ## 0.7.0
 
 The embedded map now behaves like the web map in a browser: back navigation, the share sheet, voice input, GPS

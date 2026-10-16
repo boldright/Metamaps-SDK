@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import jp.metamaps.mapview.MetamapsMapPermissionRequest
 import jp.metamaps.mapview.MetamapsMapView
 import jp.metamaps.positioning.android.MetamapsPositioningClient
 import jp.metamaps.positioning.android.MotionPolicy
@@ -341,6 +342,28 @@ class MetamapsPlugin :
             runOnMain {
                 if (mapViews[viewId] === mapView) {
                     mapView.openExternalLink(uri)
+                }
+            }
+        }
+    }
+
+    /**
+     * Asks Dart how to answer the map's permission request. `showDialog` needs an attached Activity. Without one, or
+     * when Dart declines or fails, the request is declined: it is answered from the current state without asking the OS.
+     */
+    internal fun decideMapViewPermission(
+        viewId: Long,
+        request: MetamapsMapPermissionRequest,
+        mapView: MetamapsMapView,
+    ) {
+        flutterApi.decideMapViewPermissionRequest(viewId, request.permission.wireValue) { result ->
+            runOnMain {
+                val host = activity
+                when (result.getOrNull()) {
+                    "showDialog" ->
+                        if (host != null && mapViews[viewId] === mapView) request.request(host) else request.decline()
+                    "requestedByApp" -> request.finish()
+                    else -> request.decline()
                 }
             }
         }

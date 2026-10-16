@@ -1,6 +1,6 @@
 name: metamaps_flutter
 description: Embed maps built with Metamaps in Flutter apps, with optional indoor positioning.
-version: 0.7.0
+version: 0.8.0
 publish_to: none
 homepage: https://metamaps.jp
 repository: https://github.com/boldright/Metamaps-SDK/tree/main/flutter/metamaps_flutter

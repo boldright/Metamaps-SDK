@@ -7,5 +7,6 @@ export 'src/map_view.dart'
         MetamapsMapView,
         MetamapsMapViewController,
         MetamapsMapViewCreatedCallback,
-        MetamapsExternalLinkDecisionCallback;
+        MetamapsExternalLinkDecisionCallback,
+        MetamapsPermissionRequestCallback;
 export 'src/models.dart';

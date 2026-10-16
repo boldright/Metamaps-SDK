@@ -2120,6 +2120,9 @@ class MetamapsHostApiSetup {
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol MetamapsFlutterApiProtocol {
   func decideMapViewExternalLinkOpensDefault(viewId viewIdArg: Int64, url urlArg: String, completion: @escaping (Result<Bool, PigeonError>) -> Void)
+  /// Returns how Dart answers a map permission request (Android only): `showDialog`, `requestedByApp`, or `decline`.
+  /// `permission` is `location` or `microphone`.
+  func decideMapViewPermissionRequest(viewId viewIdArg: Int64, permission permissionArg: String, completion: @escaping (Result<String, PigeonError>) -> Void)
 }
 class MetamapsFlutterApi: MetamapsFlutterApiProtocol {
   private let binaryMessenger: FlutterBinaryMessenger
@@ -2148,6 +2151,29 @@ class MetamapsFlutterApi: MetamapsFlutterApiProtocol {
         completion(.failure(PigeonError(code: "null-error", message: "Flutter api returned null value for non-null return value.", details: "")))
       } else {
         let result = listResponse[0] as! Bool
+        completion(.success(result))
+      }
+    }
+  }
+  /// Returns how Dart answers a map permission request (Android only): `showDialog`, `requestedByApp`, or `decline`.
+  /// `permission` is `location` or `microphone`.
+  func decideMapViewPermissionRequest(viewId viewIdArg: Int64, permission permissionArg: String, completion: @escaping (Result<String, PigeonError>) -> Void) {
+    let channelName: String = "dev.flutter.pigeon.metamaps_flutter.MetamapsFlutterApi.decideMapViewPermissionRequest\(messageChannelSuffix)"
+    let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
+    channel.sendMessage([viewIdArg, permissionArg] as [Any?]) { response in
+      guard let listResponse = response as? [Any?] else {
+        completion(.failure(createConnectionError(withChannelName: channelName)))
+        return
+      }
+      if listResponse.count > 1 {
+        let code: String = listResponse[0] as! String
+        let message: String? = nilOrValue(listResponse[1])
+        let details: String? = nilOrValue(listResponse[2])
+        completion(.failure(PigeonError(code: code, message: message, details: details)))
+      } else if listResponse[0] == nil {
+        completion(.failure(PigeonError(code: "null-error", message: "Flutter api returned null value for non-null return value.", details: "")))
+      } else {
+        let result = listResponse[0] as! String
         completion(.success(result))
       }
     }

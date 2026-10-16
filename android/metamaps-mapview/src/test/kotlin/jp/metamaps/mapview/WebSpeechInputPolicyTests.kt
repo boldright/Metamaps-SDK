@@ -12,34 +12,31 @@ class WebSpeechInputPolicyTests {
     private val microphone = PermissionRequest.RESOURCE_AUDIO_CAPTURE
     private val camera = PermissionRequest.RESOURCE_VIDEO_CAPTURE
 
-    private fun grants(
-        origin: String?,
-        resources: List<String> = listOf(microphone),
-        hasRecordAudioPermission: Boolean = true,
-    ) = shouldGrantWebAudioCapture(origin, resources, baseUrl, hasRecordAudioPermission)
+    private fun isMapRequest(origin: String?, resources: List<String> = listOf(microphone)) =
+        isMapMicrophoneRequest(origin, resources, baseUrl)
 
     @Test
-    fun grantsOnlyMicrophoneCaptureFromTheConfiguredHttpsMapOriginWhileTheAppHoldsRecordAudio() {
-        assertTrue(grants("https://metamaps.jp/"))
-        assertTrue(grants("https://METAMAPS.jp:443/"))
+    fun handlesOnlyMicrophoneCaptureFromTheConfiguredHttpsMapOrigin() {
+        assertTrue(isMapRequest("https://metamaps.jp/"))
+        assertTrue(isMapRequest("https://METAMAPS.jp:443/"))
 
-        assertFalse(grants("https://metamaps.jp/", hasRecordAudioPermission = false))
-        assertFalse(grants("https://example.com/"))
-        assertFalse(grants("http://metamaps.jp/"))
-        assertFalse(grants(null))
+        assertFalse(isMapRequest("https://example.com/"))
+        assertFalse(isMapRequest("http://metamaps.jp/"))
+        assertFalse(isMapRequest(null))
 
-        assertFalse(grants("https://metamaps.jp/", listOf(camera)))
-        assertFalse(grants("https://metamaps.jp/", listOf(microphone, camera)))
-        assertFalse(grants("https://metamaps.jp/", emptyList()))
+        assertFalse(isMapRequest("https://metamaps.jp/", listOf(camera)))
+        assertFalse(isMapRequest("https://metamaps.jp/", listOf(microphone, camera)))
+        assertFalse(isMapRequest("https://metamaps.jp/", emptyList()))
     }
 
+    /** 07 §4: the microphone hides only when the app cannot ask for it or the device cannot recognize speech. */
     @Test
-    fun announcesVoiceInputOnlyWhenTheMicrophoneWouldBeGrantedAndARecognizerIsAvailable() {
-        assertTrue(isWebSpeechRecognitionAvailable(baseUrl, hasRecordAudioPermission = true, hasRecognitionService = true))
+    fun announcesVoiceInputWhenTheAppDeclaresTheMicrophoneWhetherOrNotItIsGranted() {
+        assertTrue(isWebSpeechRecognitionAvailable(baseUrl, declaresRecordAudio = true, hasRecognitionService = true))
 
-        assertFalse(isWebSpeechRecognitionAvailable(baseUrl, hasRecordAudioPermission = false, hasRecognitionService = true))
-        assertFalse(isWebSpeechRecognitionAvailable(baseUrl, hasRecordAudioPermission = true, hasRecognitionService = false))
+        assertFalse(isWebSpeechRecognitionAvailable(baseUrl, declaresRecordAudio = false, hasRecognitionService = true))
+        assertFalse(isWebSpeechRecognitionAvailable(baseUrl, declaresRecordAudio = true, hasRecognitionService = false))
         val localBaseUrl = URI.create("http://localhost:8080")
-        assertFalse(isWebSpeechRecognitionAvailable(localBaseUrl, hasRecordAudioPermission = true, hasRecognitionService = true))
+        assertFalse(isWebSpeechRecognitionAvailable(localBaseUrl, declaresRecordAudio = true, hasRecognitionService = true))
     }
 }

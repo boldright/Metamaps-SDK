@@ -161,6 +161,21 @@ struct MapViewUserAgentTests {
 
 // Microphone requests from web content are granted automatically only for the main frame of the configured HTTPS origin.
 struct MapViewMicrophonePermissionPolicyTests {
+    /// 07 §4: the web map hides the microphone only when the app cannot ask for it.
+    @Test func announcesVoiceInputOnlyWhenBothPurposeStringsAreDeclared() {
+        let both: [String: Any] = [
+            "NSMicrophoneUsageDescription": "Voice search",
+            "NSSpeechRecognitionUsageDescription": "Voice search",
+        ]
+        #expect(isMetamapsSpeechRecognitionDeclared(infoDictionary: both))
+        #expect(!isMetamapsSpeechRecognitionDeclared(infoDictionary: ["NSMicrophoneUsageDescription": "Voice search"]))
+        #expect(!isMetamapsSpeechRecognitionDeclared(infoDictionary: [
+            "NSMicrophoneUsageDescription": "Voice search",
+            "NSSpeechRecognitionUsageDescription": "",
+        ]))
+        #expect(!isMetamapsSpeechRecognitionDeclared(infoDictionary: nil))
+    }
+
     @Test func grantsConfiguredHTTPSOriginIncludingCustomHostAndPort() {
         #expect(shouldAutomaticallyGrantMetamapsMicrophonePermission(
             baseURL: URL(string: "https://staging.example.test:8443/metamap")!,

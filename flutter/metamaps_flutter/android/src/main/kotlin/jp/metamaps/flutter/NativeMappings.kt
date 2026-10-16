@@ -4,6 +4,7 @@ import jp.metamaps.MetamapsError
 import jp.metamaps.mapview.FloorChangedEvent
 import jp.metamaps.mapview.MapReadyEvent
 import jp.metamaps.mapview.MapViewLoadState
+import jp.metamaps.mapview.MetamapsMapPermission
 import jp.metamaps.mapview.MetamapsMapViewEvent
 import jp.metamaps.mapview.RouteChangedEvent
 import jp.metamaps.mapview.SpotSelectedEvent
@@ -168,6 +169,12 @@ internal fun MetamapsPositioningEvent.toFlutter(clientId: Long): NativePositioni
         error = error.toFlutterError(),
     )
 }
+
+internal val MetamapsMapPermission.wireValue: String
+    get() = when (this) {
+        MetamapsMapPermission.LOCATION -> "location"
+        MetamapsMapPermission.MICROPHONE -> "microphone"
+    }
 
 internal fun MetamapsMapViewEvent.toFlutter(viewId: Long): NativeMapViewEvent = when (this) {
     is MetamapsMapViewEvent.Ready -> NativeMapViewEvent(

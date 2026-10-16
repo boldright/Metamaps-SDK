@@ -18,7 +18,7 @@ mkdir -p Vendor
 cp -R ../Metamaps-SDK/ios Vendor/metamaps-ios
 ```
 
-To get a specific version, check out its tag, for example `git -C ../Metamaps-SDK checkout v0.7.0`.
+To get a specific version, check out its tag, for example `git -C ../Metamaps-SDK checkout v0.8.0`.
 
 Keeping the directory name fixed means Xcode's package reference survives SDK updates. Step 10 describes how to
 replace the package.
@@ -133,7 +133,10 @@ Add these four keys to your app's `Info.plist`, even if you only show maps:
 <string>Motion data keeps your location up to date while you walk.</string>
 ```
 
-- The microphone and speech recognition keys are used by the map's voice input.
+- The microphone and speech recognition keys are used by the map's voice input. Without either one, the map hides
+  its microphone button. The system asks for these permissions the first time the user taps the microphone.
+- If the user denies location or microphone permission, the map asks the user to allow it in the device settings.
+  The map view does not report the denial to your app.
 - The location key is used when the map shows the user's location: by GPS location on maps that enable it, and by
   indoor positioning (step 8). On a map with GPS location enabled, the system asks for location permission the
   first time the user taps the location button in the map, even in an app that only shows maps.
@@ -284,7 +287,7 @@ rm -rf Vendor/metamaps-ios
 cp -R ../Metamaps-SDK/ios Vendor/metamaps-ios
 ```
 
-Replace `<version>` with the version to install, for example `0.7.0`.
+Replace `<version>` with the version to install, for example `0.8.0`.
 
 **Do not skip `rm -rf`.** If `Vendor/metamaps-ios` still exists, `cp -R` copies the new directory **into** it.
 Xcode then keeps reading the old `Vendor/metamaps-ios/Package.swift` and `Artifacts/`, and the build succeeds with

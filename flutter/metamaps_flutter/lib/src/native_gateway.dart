@@ -189,6 +189,8 @@ final class NativeEventRouter implements MetamapsFlutterApi {
   final Map<int, void Function(MetamapsPositioningEvent)> _clientHandlers = {};
   final Map<int, void Function(MetamapsMapViewEvent)> _mapViewHandlers = {};
   final Map<int, bool Function(Uri)> _externalLinkDecisionHandlers = {};
+  final Map<int, Future<MapPermissionAnswer> Function(MapPermission)>
+  _permissionRequestHandlers = {};
   StreamSubscription<NativeEvent>? _subscription;
   bool _flutterApiInstalled = false;
 
@@ -208,15 +210,19 @@ final class NativeEventRouter implements MetamapsFlutterApi {
     int viewId,
     void Function(MetamapsMapViewEvent) handler, {
     required bool Function(Uri) externalLinkDecisionHandler,
+    required Future<MapPermissionAnswer> Function(MapPermission)
+    permissionRequestHandler,
   }) {
     _ensureStarted();
     _mapViewHandlers[viewId] = handler;
     _externalLinkDecisionHandlers[viewId] = externalLinkDecisionHandler;
+    _permissionRequestHandlers[viewId] = permissionRequestHandler;
   }
 
   void unregisterMapView(int viewId) {
     _mapViewHandlers.remove(viewId);
     _externalLinkDecisionHandlers.remove(viewId);
+    _permissionRequestHandlers.remove(viewId);
   }
 
   void _ensureStarted() {
@@ -237,6 +243,19 @@ final class NativeEventRouter implements MetamapsFlutterApi {
   ) async {
     final handler = _externalLinkDecisionHandlers[viewId];
     return handler?.call(Uri.parse(url)) ?? false;
+  }
+
+  @override
+  Future<String> decideMapViewPermissionRequest(
+    int viewId,
+    String permission,
+  ) async {
+    final handler = _permissionRequestHandlers[viewId];
+    final value = MapPermission.fromWire(permission);
+    if (handler == null || value == MapPermission.unknown) {
+      return MapPermissionAnswer.decline.wireValue;
+    }
+    return (await handler(value)).wireValue;
   }
 
   void _handleNativeEvent(NativeEvent event) {

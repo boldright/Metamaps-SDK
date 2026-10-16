@@ -17,6 +17,16 @@ typedef MetamapsMapViewCreatedCallback =
 typedef MetamapsExternalLinkDecisionCallback =
     MetamapsExternalLinkDecision Function(Uri url);
 
+/// Answers the map's permission request. Android only.
+///
+/// The map asks when it needs a permission that your app declares but has not been granted, such as when the user
+/// taps the location button or the microphone. Return [MapPermissionAnswer.showDialog] to let the plugin show the OS
+/// dialog, for example after your own explanation, [MapPermissionAnswer.requestedByApp] after requesting the
+/// permission yourself, or [MapPermissionAnswer.decline] to leave it as it is. In every case, the map reads the
+/// permission state afterwards, and a denial arrives as [MapViewErrorEvent].
+typedef MetamapsPermissionRequestCallback =
+    Future<MapPermissionAnswer> Function(MapPermissionRequest request);
+
 /// Controls the displayed map.
 ///
 /// Unusable after the widget is disposed: the control methods then throw a [MetamapsError] synchronously. Call
@@ -184,6 +194,7 @@ class MetamapsMapView extends StatefulWidget {
     this.onEvent,
     this.onViewCreated,
     this.onExternalLinkDecision,
+    this.onPermissionRequest,
     @visibleForTesting NativeGateway? nativeGateway,
   }) : _nativeGateway = nativeGateway ?? PigeonNativeGateway() {
     configuration.validate();
@@ -200,6 +211,10 @@ class MetamapsMapView extends StatefulWidget {
 
   /// Called to decide on an external link before the SDK's default handling opens it.
   final MetamapsExternalLinkDecisionCallback? onExternalLinkDecision;
+
+  /// Called on Android when the map needs a permission that your app has not been granted. Without it, the map's
+  /// request is denied at once.
+  final MetamapsPermissionRequestCallback? onPermissionRequest;
   final NativeGateway _nativeGateway;
 
   @override
@@ -254,6 +269,8 @@ class _MetamapsMapViewState extends State<MetamapsMapView> {
       _handleEvent,
       externalLinkDecisionHandler: (url) =>
           mapViewExternalLinkOpensDefault(widget.onExternalLinkDecision, url),
+      permissionRequestHandler: (permission) =>
+          mapViewPermissionAnswer(widget.onPermissionRequest, permission),
     );
     widget.onViewCreated?.call(controller);
     unawaited(
@@ -327,6 +344,14 @@ bool mapViewExternalLinkOpensDefault(
 ) =>
     (callback?.call(url) ?? MetamapsExternalLinkDecision.openDefault) ==
     MetamapsExternalLinkDecision.openDefault;
+
+@visibleForTesting
+Future<MapPermissionAnswer> mapViewPermissionAnswer(
+  MetamapsPermissionRequestCallback? callback,
+  MapPermission permission,
+) async =>
+    await callback?.call(MapPermissionRequest(permission)) ??
+    MapPermissionAnswer.decline;
 
 bool _sameConfiguration(
   MetamapsMapViewConfiguration left,

@@ -62,14 +62,16 @@ remove `ACCESS_COARSE_LOCATION`, `BLUETOOTH`, and `BLUETOOTH_ADMIN`, which the A
 removal can also apply to the same permissions declared by other libraries, so if another library needs any of
 them, declare it in your app's manifest; your app's own declarations always take priority.
 
-Maps that show the user's location with GPS need precise location permission. The map view lets the map read the
-device location only when your app has already been granted `ACCESS_FINE_LOCATION`, and it never shows a permission
-dialog for this. To use GPS location in the map, declare `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` and
-request them from your app.
+GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input needs
+`RECORD_AUDIO`. Declare the ones you offer. When the user taps the location button or the microphone before your app
+holds the permission, the map view asks your app through `permissionRequestHandler`; answer with `request(activity)`
+to show the OS dialog, `finish()` after requesting the permissions yourself, or `decline()`. The SDK never shows the dialog on its
+own, and a denial arrives as an error whose `userAction` tells your app which guidance to show. The map hides its
+microphone button only when `RECORD_AUDIO` is not declared or the device has no speech recognition service. The SDK
+adds a `<queries>` entry for the speech recognition service to the merged manifest.
 
-Voice input in the map works the same way with `RECORD_AUDIO`: declare and request it from your app to show the
-map's microphone button. The SDK adds a `<queries>` entry for the speech recognition service to the merged
-manifest.
+On Android 11 and later, the map's safe area (`env(safe-area-inset-*)`) gets only the system bars and display cutout
+that overlap the map view, so padding the parent does not add the space twice.
 
 ## Map view
 

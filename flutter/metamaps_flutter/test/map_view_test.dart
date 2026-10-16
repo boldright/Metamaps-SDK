@@ -138,4 +138,34 @@ void main() {
       },
     );
   });
+
+  group('MapView permission requests', () {
+    test('declines without asking the OS unless the host answers', () async {
+      expect(
+        await mapViewPermissionAnswer(null, MapPermission.microphone),
+        MapPermissionAnswer.decline,
+      );
+      expect(
+        await NativeEventRouter.instance.decideMapViewPermissionRequest(
+          404,
+          'location',
+        ),
+        'decline',
+      );
+    });
+
+    test('passes the requested feature and the host answer', () async {
+      MapPermission? requested;
+      Future<MapPermissionAnswer> answer(MapPermissionRequest request) async {
+        requested = request.permission;
+        return MapPermissionAnswer.requestedByApp;
+      }
+
+      expect(
+        await mapViewPermissionAnswer(answer, MapPermission.location),
+        MapPermissionAnswer.requestedByApp,
+      );
+      expect(requested, MapPermission.location);
+    });
+  });
 }

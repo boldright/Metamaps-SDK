@@ -22,7 +22,7 @@ sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > v
 ```
 
 To get a specific version, check out its tag before publishing, for example
-`git -C ../Metamaps-SDK checkout v0.7.0`.
+`git -C ../Metamaps-SDK checkout v0.8.0`.
 
 Because the directory name is fixed and dependency versions are read from `VERSION`, an SDK update only replaces
 this directory; `settings.gradle.kts` and `build.gradle.kts` stay unchanged. Step 11 describes the update.
@@ -157,30 +157,52 @@ A map-only app needs no permission entries. The SDK adds only `INTERNET` to your
 add location, Bluetooth, or activity recognition permissions. Step 9 lists the permissions that indoor
 positioning needs.
 
-Maps that show the user's location with GPS need precise location permission. The map view lets the map read the
-device location only when your app has already been granted `ACCESS_FINE_LOCATION`, and it never shows a permission
-dialog for this. To use GPS location in the map, declare `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION` in your
-manifest and request them from your app. Without the permission, the map tells the user that location is not
-available.
-
-Voice input in the map's search field and AI chat needs microphone permission. The map view lets the map use the
-microphone only when your app has already been granted `RECORD_AUDIO`, and it never shows a permission dialog for
-this. To offer voice input, declare `RECORD_AUDIO` in your manifest and request it from your app. Without the
-permission, or on a device without a speech recognition service, the map hides its microphone button; after the
-user grants the permission, the button appears without reloading the map. Voice input uses the device's speech
-recognition service, which can send the audio to a server, so cover the microphone in your privacy policy. To let
-the map reach that service on Android 11 and later, the SDK adds a `<queries>` entry for
-`android.speech.RecognitionService` to your merged manifest.
+GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input in the map's
+search field and AI chat needs `RECORD_AUDIO`. Declare the ones you offer in your manifest:
 
 ```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
+
+When the user taps the map's location button or microphone before your app holds the permission, the map view asks
+your app through `permissionRequestHandler`. The SDK never shows a permission dialog for these on its own. Answer
+each request once: `request(activity)` shows the OS permission dialog; after requesting `androidPermissions`
+yourself, call `finish()`; to leave the permission as it is, for example when the user turned down your own
+explanation, call `decline()`. The map waits until you answer, then reads the result from the OS. Without a handler,
+the map view denies these requests at once.
+
+```kotlin
+mapView.permissionRequestHandler = { request ->
+    // Show your own explanation first if your app needs one.
+    request.request(this)
+}
+```
+
+When the permission stays denied, the map tells the user that the feature is not available, and the map view emits
+`MetamapsMapViewEvent.Error` with `LOCATION_PERMISSION_DENIED`, `PRECISE_LOCATION_REQUIRED` (only approximate
+location is granted; GPS in the map needs precise location), or `MICROPHONE_PERMISSION_DENIED`. Base your guidance
+on its `userAction`. With `REQUEST_PERMISSION` or `ENABLE_PRECISE_LOCATION`, the next tap can ask again. With
+`OPEN_APP_SETTINGS`, the OS no longer shows the dialog, so guide the user to your app's settings. The map itself
+never points the user to settings. If your app does not declare the permission, the map view denies the request
+without asking you, and the error's `userAction` is `NONE`.
+
+The map hides its microphone button only when your app does not declare `RECORD_AUDIO` or the device has no speech
+recognition service; a denied permission does not hide it. Voice input uses the device's speech recognition
+service, which can send the audio to a server, so cover the microphone in your privacy policy. To let the map reach
+that service on Android 11 and later, the SDK adds a `<queries>` entry for `android.speech.RecognitionService` to
+your merged manifest.
 
 Do not replace `webView.webChromeClient` to grant location or the microphone yourself; the map view's own client
 also handles links that open in a new window.
 
 The map's text does not follow the system font size: the map view fixes the WebView text zoom at 100%, as iOS
 does, because the map's labels and panels have fixed sizes.
+
+On Android 11 and later, the map's safe area gets only the system bars and display cutout that overlap the map view.
+Pad the map's parent, consume the insets, or draw the map edge to edge; the map keeps its controls clear of the
+system bars without adding the space twice.
 
 The SDK also removes `ACCESS_COARSE_LOCATION`, `BLUETOOTH`, and `BLUETOOTH_ADMIN`, which the Android Beacon
 Library it uses declares. The removal can also apply to the same permissions declared by other libraries in your
@@ -388,7 +410,7 @@ cp -R ../Metamaps-SDK/android/build/maven-repository vendor/metamaps-android/
 sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > vendor/metamaps-android/VERSION
 ```
 
-Replace `<version>` with the version to install, for example `0.7.0`.
+Replace `<version>` with the version to install, for example `0.8.0`.
 
 Build as usual after replacing the directory:
 

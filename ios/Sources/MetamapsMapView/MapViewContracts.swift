@@ -85,6 +85,16 @@ func shouldAutomaticallyGrantMetamapsMicrophonePermission(
         isMainFrame: isMainFrame)
 }
 
+/// Whether the map view announces voice input (`bridge.hello.payload.speechRecognition`): the app's `Info.plist`
+/// declares both purpose strings that WebKit's speech recognition needs. Without either one, WebKit refuses to start
+/// it, so the web map hides its microphone. Whether the user has granted the permissions does not matter; WebKit asks
+/// for them when the user taps the microphone.
+func isMetamapsSpeechRecognitionDeclared(infoDictionary: [String: Any]?) -> Bool {
+    ["NSMicrophoneUsageDescription", "NSSpeechRecognitionUsageDescription"].allSatisfy { key in
+        (infoDictionary?[key] as? String)?.isEmpty == false
+    }
+}
+
 /// Whether a permission request comes from the main frame of the configured HTTPS map origin.
 func isConfiguredMetamapsMainFrameOrigin(
     baseURL: URL,

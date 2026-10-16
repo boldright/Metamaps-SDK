@@ -18,7 +18,7 @@ mkdir -p vendor
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v0.7.0`.
+To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v0.8.0`.
 
 Because the directory name is fixed, an SDK update only replaces this directory; `pubspec.yaml` and
 `build.gradle.kts` stay unchanged. Step 11 describes the update.
@@ -166,28 +166,43 @@ it does not add location, Bluetooth, or activity recognition permissions. The SD
 The removal can also apply to the same permissions declared by other libraries in your app, so if another library
 needs any of them, declare it in your app's manifest; your app's own declarations always take priority.
 
-On Android, maps that show the user's location with GPS need precise location permission. The map view lets the
-map read the device location only when your app has already been granted `ACCESS_FINE_LOCATION`, and it never shows
-a permission dialog for this. To use GPS location in the map, declare `ACCESS_FINE_LOCATION` and
-`ACCESS_COARSE_LOCATION` in your manifest and request them from your app. Without the permission, the map tells the
-user that location is not available.
-
-The plugin has no API for these Android permissions. Request them with your app's own permission flow, for example
-the `permission_handler` package.
-
-On Android, voice input in the map's search field and AI chat needs microphone permission. The map view lets the
-map use the microphone only when your app has already been granted `RECORD_AUDIO`, and it never shows a permission
-dialog for this. To offer voice input, declare `RECORD_AUDIO` in `android/app/src/main/AndroidManifest.xml` and
-request it from your app. Without the permission, or on a device without a speech recognition service, the map
-hides its microphone button; after the user grants the permission, the button appears without reloading the map.
-Voice input uses the device's speech recognition service, which can send the audio to a server, so cover the
-microphone in your privacy policy. The SDK adds a `<queries>` entry for `android.speech.RecognitionService` to your
-merged manifest so that the map can reach that service on Android 11 and later. The map's text does not follow the
-system font size on either platform.
+On Android, GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input in
+the map's search field and AI chat needs `RECORD_AUDIO`. Declare the ones you offer in
+`android/app/src/main/AndroidManifest.xml`:
 
 ```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
+
+When the user taps the map's location button or microphone before your app holds the permission, the map asks your
+app through `onPermissionRequest`. Answer with `MapPermissionAnswer.showDialog` to let the plugin show the OS
+permission dialog, for example after your own explanation; with `MapPermissionAnswer.requestedByApp` after you
+requested the permission yourself, for example with the `permission_handler` package; or with
+`MapPermissionAnswer.decline` to leave the permission as it is. In every case, the map reads the result from the OS
+afterwards. Without `onPermissionRequest`, the map's request is declined at once. iOS never calls it: WebKit asks
+for these permissions itself, and after a denial the map asks the user to allow it in the device settings.
+
+```dart
+MetamapsMapView(
+  configuration: MetamapsMapViewConfiguration(mapSlug: 'example'),
+  onPermissionRequest: (request) async => MapPermissionAnswer.showDialog,
+)
+```
+
+When the permission stays denied, the map tells the user that the feature is not available, and `onEvent` receives
+`MapViewErrorEvent` with `locationPermissionDenied`, `preciseLocationRequired`, or `microphonePermissionDenied`.
+Base your guidance on its `userAction`: `openAppSettings` means the OS no longer shows the dialog, so guide the user
+to your app's settings. The map itself never points the user to settings.
+
+The map hides its microphone button only when your app does not declare `RECORD_AUDIO` or the device has no speech
+recognition service; a denied permission does not hide it. Voice input uses the device's speech recognition
+service, which can send the audio to a server, so cover the microphone in your privacy policy. The SDK adds a
+`<queries>` entry for `android.speech.RecognitionService` to your merged manifest so that the map can reach that
+service on Android 11 and later. The map's text does not follow the system font size on either platform. On
+Android 11 and later, the map's safe area gets only the system bars and display cutout that overlap the map view,
+so wrapping the map in `SafeArea` does not add the space twice.
 
 On iOS, add these four keys to `ios/Runner/Info.plist`, even if you only show maps:
 
@@ -202,12 +217,12 @@ On iOS, add these four keys to `ios/Runner/Info.plist`, even if you only show ma
 <string>Motion data keeps your location up to date while you walk.</string>
 ```
 
-The microphone and speech recognition keys are used by the map's voice input. The location key is used when the
-map shows the user's location: by GPS location on maps that enable it, and by indoor positioning (step 9). On a map
-with GPS location enabled, the system asks for location permission the first time the user taps the location button
-in the map, even in an app that only shows maps. The motion key is used only by indoor positioning, and the system
-asks for it only when positioning starts. App Store Connect checks for the location and motion keys because the SDK
-links Core Location and Core Motion.
+The microphone and speech recognition keys are used by the map's voice input; without either one, the map hides its
+microphone button. The location key is used when the map shows the user's location: by GPS location on maps that
+enable it, and by indoor positioning (step 9). On a map with GPS location enabled, the system asks for location
+permission the first time the user taps the location button in the map, even in an app that only shows maps. The
+motion key is used only by indoor positioning, and the system asks for it only when positioning starts. App Store
+Connect checks for the location and motion keys because the SDK links Core Location and Core Motion.
 
 Your IDE's hover documentation, or `dart doc` run in the plugin directory, shows the public API documentation.
 
@@ -380,7 +395,7 @@ rm -rf vendor/metamaps-flutter
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-Replace `<version>` with the version to install, for example `0.7.0`.
+Replace `<version>` with the version to install, for example `0.8.0`.
 
 **Do not skip `rm -rf`.** If `vendor/metamaps-flutter` still exists, `cp -R` copies the new directory **into** it.
 Flutter then keeps reading the old `vendor/metamaps-flutter/pubspec.yaml`, `android/`, and `ios/`, and the build

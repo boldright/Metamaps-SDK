@@ -466,6 +466,11 @@ abstract class MetamapsHostApi {
 abstract class MetamapsFlutterApi {
   @async
   bool decideMapViewExternalLinkOpensDefault(int viewId, String url);
+
+  /// Returns how Dart answers a map permission request (Android only): `showDialog`, `requestedByApp`, or `decline`.
+  /// `permission` is `location` or `microphone`.
+  @async
+  String decideMapViewPermissionRequest(int viewId, String permission);
 }
 
 @EventChannelApi()
