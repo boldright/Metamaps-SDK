@@ -18,7 +18,7 @@ mkdir -p vendor
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v0.8.0`.
+To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v0.9.0`.
 
 Because the directory name is fixed, an SDK update only replaces this directory; `pubspec.yaml` and
 `build.gradle.kts` stay unchanged. Step 11 describes the update.
@@ -176,18 +176,24 @@ the map's search field and AI chat needs `RECORD_AUDIO`. Declare the ones you of
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
-When the user taps the map's location button or microphone before your app holds the permission, the map asks your
-app through `onPermissionRequest`. Answer with `MapPermissionAnswer.showDialog` to let the plugin show the OS
-permission dialog, for example after your own explanation; with `MapPermissionAnswer.requestedByApp` after you
-requested the permission yourself, for example with the `permission_handler` package; or with
-`MapPermissionAnswer.decline` to leave the permission as it is. In every case, the map reads the result from the OS
-afterwards. Without `onPermissionRequest`, the map's request is declined at once. iOS never calls it: WebKit asks
-for these permissions itself, and after a denial the map asks the user to allow it in the device settings.
+When the user taps the map's location button or microphone before your app holds the permission, the plugin shows
+the OS permission dialog on Android, and the map waits for the user's answer. No code is needed for this. On iOS,
+WebKit asks for these permissions itself, and after a denial the map asks the user to allow it in the device
+settings.
+
+To show your own explanation first, or to request the permission yourself, set `onPermissionRequest`; it is called
+on Android only. Answer with `MapPermissionAnswer.showDialog` to let the plugin show the OS permission dialog; with
+`MapPermissionAnswer.requestedByApp` after you requested the permission yourself, for example with the
+`permission_handler` package; or with `MapPermissionAnswer.decline` to leave the permission as it is. In every case,
+the map reads the result from the OS afterwards.
 
 ```dart
 MetamapsMapView(
   configuration: MetamapsMapViewConfiguration(mapSlug: 'example'),
-  onPermissionRequest: (request) async => MapPermissionAnswer.showDialog,
+  onPermissionRequest: (request) async {
+    // Show your own explanation here, then let the plugin show the OS dialog.
+    return MapPermissionAnswer.showDialog;
+  },
 )
 ```
 
@@ -395,7 +401,7 @@ rm -rf vendor/metamaps-flutter
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-Replace `<version>` with the version to install, for example `0.8.0`.
+Replace `<version>` with the version to install, for example `0.9.0`.
 
 **Do not skip `rm -rf`.** If `vendor/metamaps-flutter` still exists, `cp -R` copies the new directory **into** it.
 Flutter then keeps reading the old `vendor/metamaps-flutter/pubspec.yaml`, `android/`, and `ios/`, and the build

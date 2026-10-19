@@ -140,10 +140,10 @@ void main() {
   });
 
   group('MapView permission requests', () {
-    test('declines without asking the OS unless the host answers', () async {
+    test('shows the OS dialog without a host callback, and declines for a view that is gone', () async {
       expect(
         await mapViewPermissionAnswer(null, MapPermission.microphone),
-        MapPermissionAnswer.decline,
+        MapPermissionAnswer.showDialog,
       );
       expect(
         await NativeEventRouter.instance.decideMapViewPermissionRequest(

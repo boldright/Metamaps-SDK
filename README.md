@@ -32,7 +32,7 @@ repository builds against them, so you do not need any other download.
 | Android | minSdk 24, compileSdk 36 or later, JDK 17 | Gradle 9.8.0, Android Gradle Plugin 9.4.1, Kotlin 2.4.20 |
 | Flutter | Flutter 3.44.9, Dart 3.12.2, plus the iOS and Android minimums above | Flutter 3.44.9 |
 
-All three platforms share one version number, and each version has a tag in this repository, such as `v0.8.0`.
+All three platforms share one version number, and each version has a tag in this repository, such as `v0.9.0`.
 
 ## Quick start
 
@@ -84,9 +84,9 @@ MetamapsMapView(
 
 - **Android:** nothing beyond the dependency. The libraries add only the `INTERNET` permission to your app. To
   use GPS location on maps that enable it, declare precise location permission; to offer the map's voice input,
-  declare `RECORD_AUDIO`. The map asks your app for them when the user taps the location button or the microphone
-  (`permissionRequestHandler`, or `onPermissionRequest` in Flutter). Without the `RECORD_AUDIO` declaration, the map
-  hides its microphone button.
+  declare `RECORD_AUDIO`. When the user taps the location button or the microphone, the map view shows the OS dialog
+  for them. To show your own explanation first, set `permissionRequestHandler` (`onPermissionRequest` in Flutter).
+  Without the `RECORD_AUDIO` declaration, the map hides its microphone button.
 - **iOS:** four `Info.plist` purpose strings. The microphone and speech recognition keys are used by the map's
   voice input; without either one, the map hides its microphone button. The location key is also used by GPS
   location on maps that enable it, so the system asks for location permission the first time the user taps the

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0
+
+On Android, GPS location and voice input in the map now work without permission code in your app, as on iOS.
+
+### Breaking changes
+
+- Android / Flutter (Android): Without `permissionRequestHandler` (Flutter: `onPermissionRequest`), the map view now
+  shows the OS permission dialog from its Activity when the user taps the map's location button or microphone
+  before your app holds the permission. It used to deny the request at once. Hosts that set a handler see no
+  change. To keep the old behavior, set a handler that calls `decline()` (Flutter: returns
+  `MapPermissionAnswer.decline`). A map view that is not in an Activity still denies the request.
+
 ## 0.8.0
 
 GPS location and voice input in the map now ask your app for permission when the user taps them, instead of failing

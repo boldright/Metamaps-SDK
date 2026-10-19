@@ -23,7 +23,8 @@ typedef MetamapsExternalLinkDecisionCallback =
 /// taps the location button or the microphone. Return [MapPermissionAnswer.showDialog] to let the plugin show the OS
 /// dialog, for example after your own explanation, [MapPermissionAnswer.requestedByApp] after requesting the
 /// permission yourself, or [MapPermissionAnswer.decline] to leave it as it is. In every case, the map reads the
-/// permission state afterwards, and a denial arrives as [MapViewErrorEvent].
+/// permission state afterwards, and a denial arrives as [MapViewErrorEvent]. Without this callback, the plugin shows
+/// the OS dialog, as with [MapPermissionAnswer.showDialog].
 typedef MetamapsPermissionRequestCallback =
     Future<MapPermissionAnswer> Function(MapPermissionRequest request);
 
@@ -212,8 +213,8 @@ class MetamapsMapView extends StatefulWidget {
   /// Called to decide on an external link before the SDK's default handling opens it.
   final MetamapsExternalLinkDecisionCallback? onExternalLinkDecision;
 
-  /// Called on Android when the map needs a permission that your app has not been granted. Without it, the map's
-  /// request is denied at once.
+  /// Called on Android when the map needs a permission that your app has not been granted. Without it, the plugin
+  /// shows the OS permission dialog, as WebKit does on iOS.
   final MetamapsPermissionRequestCallback? onPermissionRequest;
   final NativeGateway _nativeGateway;
 
@@ -351,7 +352,7 @@ Future<MapPermissionAnswer> mapViewPermissionAnswer(
   MapPermission permission,
 ) async =>
     await callback?.call(MapPermissionRequest(permission)) ??
-    MapPermissionAnswer.decline;
+    MapPermissionAnswer.showDialog;
 
 bool _sameConfiguration(
   MetamapsMapViewConfiguration left,

@@ -88,7 +88,7 @@ import org.json.JSONObject
  *   starts loading another page, such as after [setLanguage] or [reload], until the next `Ready`.
  * - GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input needs
  *   `RECORD_AUDIO`, declared in your app's manifest. When the map uses one of them before it is granted, the view
- *   asks your app through [permissionRequestHandler]; the SDK never shows a permission dialog for them on its own.
+ *   asks your app through [permissionRequestHandler], or shows the OS permission dialog itself when you set none.
  * - The page's safe area (`env(safe-area-inset-*)`) gets only the system bars and display cutout that overlap this
  *   view, on Android 11 and later. Pad the parent, consume the insets, or draw the map edge to edge; the map does not
  *   add the space twice.
@@ -140,7 +140,7 @@ class MetamapsMapView @JvmOverloads constructor(
     /** Whether voice input was last announced in `bridge.hello` as available. */
     private var lastSentSpeechRecognition: Boolean? = null
     private var windowVisible = false
-    /** Map permission requests waiting for the host. The first one has been passed to the host once `presented`. */
+    /** Map permission requests waiting for an answer. The first one has been passed to the handler once `presented`. */
     private val pendingPermissions = ArrayDeque<PendingMapPermission>()
     private val declaredPermissions by lazy { PermissionRequirements.declaredPermissions(context) }
     private val pendingCenterReticleRequests = mutableMapOf<UUID, CompletableDeferred<MapCenterReticleCandidate?>>()
@@ -190,8 +190,10 @@ class MetamapsMapView @JvmOverloads constructor(
      * Receives the map's requests for a permission that your app declares but has not been granted, such as when the
      * user taps the location button or the microphone. Answer each request once with
      * [MetamapsMapPermissionRequest.request], [MetamapsMapPermissionRequest.finish], or
-     * [MetamapsMapPermissionRequest.decline]; the map waits until then, and the view passes you one request at a time. When this is `null`, the view denies such requests at once. Either
-     * way, a denied request emits [MetamapsMapViewEvent.Error] with the `userAction` your app's guidance should follow.
+     * [MetamapsMapPermissionRequest.decline]; the map waits until then, and the view passes you one request at a time.
+     * When this is `null`, the view shows the OS permission dialog from its own Activity, as WebKit does on iOS, and
+     * denies the request when it is not in an Activity. Either way, a denied request emits [MetamapsMapViewEvent.Error]
+     * with the `userAction` your app's guidance should follow.
      */
     var permissionRequestHandler: ((MetamapsMapPermissionRequest) -> Unit)? = null
 
@@ -291,7 +293,7 @@ class MetamapsMapView @JvmOverloads constructor(
     /**
      * Requests the Android permissions that indoor positioning needs. It may show OS permission dialogs, so call it
      * from a user action. It never requests `RECORD_AUDIO`, and it requests location only for maps with indoor
-     * positioning. Voice input and GPS location in the map ask your app through [permissionRequestHandler] instead.
+     * positioning. Voice input and GPS location in the map ask when the map uses them; see [permissionRequestHandler].
      */
     suspend fun requestPositioningAuthorization(activity: Activity? = context.findActivity()) {
         ensureNotDisposed("requestPositioningAuthorization")
@@ -1003,8 +1005,8 @@ class MetamapsMapView @JvmOverloads constructor(
 
     // ── Map permissions: GPS location and voice input ─────────────────
     /**
-     * Grants a map permission request that the app already holds, denies one the app cannot ask for, and passes the
-     * rest to [permissionRequestHandler] one at a time.
+     * Grants a map permission request that the app already holds, denies one the app cannot ask for, and asks for the
+     * rest one at a time: through [permissionRequestHandler], or with the OS dialog when there is no handler.
      */
     private fun decideMapPermission(
         permission: MetamapsMapPermission,
@@ -1015,7 +1017,7 @@ class MetamapsMapView @JvmOverloads constructor(
         val status = currentPermissionStatus(permission)
         when {
             status == MapPermissionStatus.GRANTED -> grant()
-            status == MapPermissionStatus.NOT_DECLARED || permissionRequestHandler == null -> {
+            status == MapPermissionStatus.NOT_DECLARED -> {
                 deny()
                 val canAskAgain = canAskAgain(permission, activity = null, requestedNow = false)
                 emit(MetamapsMapViewEvent.Error(mapPermissionDeniedError(permission, status, canAskAgain)))
@@ -1030,11 +1032,10 @@ class MetamapsMapView @JvmOverloads constructor(
     private fun presentNextPermission() {
         val next = pendingPermissions.firstOrNull() ?: return
         if (next.presented) return
-        val handler = permissionRequestHandler
-        if (handler == null) {
-            // The host removed its handler while the request waited.
-            settlePermission(next) { canAskAgain(next.permission, activity = null, requestedNow = false) }
-            return
+        // Without a handler, show the OS dialog from the view's own Activity, as WebKit does on iOS. A view outside an
+        // Activity cannot show it, so the request is declined.
+        val handler = permissionRequestHandler ?: { request: MetamapsMapPermissionRequest ->
+            context.findActivity()?.let(request::request) ?: request.decline()
         }
         next.presented = true
         val request = MetamapsMapPermissionRequest(
@@ -1078,7 +1079,7 @@ class MetamapsMapView @JvmOverloads constructor(
     }
 
     /**
-     * Answers [entry] from the OS permission state after the host answered it, and every other waiting request for
+     * Answers [entry] from the OS permission state after its request was answered, and every other waiting request for
      * the same permission with it, so that one denial does not show the dialog again. Then passes on the next request.
      */
     private fun settlePermission(entry: PendingMapPermission, canAskAgain: () -> Boolean) {
@@ -1100,8 +1101,8 @@ class MetamapsMapView @JvmOverloads constructor(
     }
 
     /**
-     * The WebView withdrew a request, for example because the page stopped asking. A request the host already has stays
-     * first in line until the host answers it, so that two permission dialogs never overlap.
+     * The WebView withdrew a request, for example because the page stopped asking. A request already passed to the
+     * handler stays first in line until it is answered, so that two permission dialogs never overlap.
      */
     private fun cancelPendingPermissions(permission: MetamapsMapPermission, key: Any?) {
         pendingPermissions
@@ -1614,7 +1615,7 @@ class MetamapsMapView @JvmOverloads constructor(
         const val JS_INTERFACE = "MetamapNative"
     }
 
-    /** A web permission request that waits for the host. [key] identifies the WebView request it answers. */
+    /** A web permission request that waits for an answer. [key] identifies the WebView request it answers. */
     private class PendingMapPermission(
         val permission: MetamapsMapPermission,
         val key: Any?,

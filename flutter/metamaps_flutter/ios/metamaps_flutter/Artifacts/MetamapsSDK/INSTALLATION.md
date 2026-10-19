@@ -18,7 +18,7 @@ mkdir -p Vendor
 cp -R ../Metamaps-SDK/ios Vendor/metamaps-ios
 ```
 
-To get a specific version, check out its tag, for example `git -C ../Metamaps-SDK checkout v0.8.0`.
+To get a specific version, check out its tag, for example `git -C ../Metamaps-SDK checkout v0.9.0`.
 
 Keeping the directory name fixed means Xcode's package reference survives SDK updates. Step 10 describes how to
 replace the package.
@@ -287,7 +287,7 @@ rm -rf Vendor/metamaps-ios
 cp -R ../Metamaps-SDK/ios Vendor/metamaps-ios
 ```
 
-Replace `<version>` with the version to install, for example `0.8.0`.
+Replace `<version>` with the version to install, for example `0.9.0`.
 
 **Do not skip `rm -rf`.** If `Vendor/metamaps-ios` still exists, `cp -R` copies the new directory **into** it.
 Xcode then keeps reading the old `Vendor/metamaps-ios/Package.swift` and `Artifacts/`, and the build succeeds with

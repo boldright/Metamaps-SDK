@@ -1,0 +1,117 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "jp.metamaps",
+    "module": "metamaps-mapview",
+    "version": "0.9.0",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.8.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "jp.metamaps",
+          "module": "metamaps-positioning",
+          "version": {
+            "requires": "0.9.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.4.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "metamaps-mapview-0.9.0.aar",
+          "url": "metamaps-mapview-0.9.0.aar",
+          "size": 196476,
+          "sha512": "394bb9931308173b75f54c87363ca71e4acd52ea36569bf761f9aaec44a519966e6fb0dd7a772e7f84a73bd53b55fa80250a24efdfeb87fb3793e99217a5dc92",
+          "sha256": "820181ae0a6fcbf01b75073550a8ba200883c5868c821301ed7b1aa9d8914ffa",
+          "sha1": "323b592db8fd1f542c7649ecce94495e318f9248",
+          "md5": "243f12cad5a5db72a9a9caad89180ba2"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.browser",
+          "module": "browser",
+          "version": {
+            "requires": "1.10.0"
+          }
+        },
+        {
+          "group": "jp.metamaps",
+          "module": "metamaps-positioning",
+          "version": {
+            "requires": "0.9.0"
+          }
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.4.20"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "metamaps-mapview-0.9.0.aar",
+          "url": "metamaps-mapview-0.9.0.aar",
+          "size": 196476,
+          "sha512": "394bb9931308173b75f54c87363ca71e4acd52ea36569bf761f9aaec44a519966e6fb0dd7a772e7f84a73bd53b55fa80250a24efdfeb87fb3793e99217a5dc92",
+          "sha256": "820181ae0a6fcbf01b75073550a8ba200883c5868c821301ed7b1aa9d8914ffa",
+          "sha1": "323b592db8fd1f542c7649ecce94495e318f9248",
+          "md5": "243f12cad5a5db72a9a9caad89180ba2"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseSourcePublication",
+      "attributes": {
+        "org.gradle.category": "documentation",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.docstype": "sources",
+        "org.gradle.usage": "java-runtime"
+      },
+      "files": [
+        {
+          "name": "metamaps-mapview-0.9.0-sources.jar",
+          "url": "metamaps-mapview-0.9.0-sources.jar",
+          "size": 35051,
+          "sha512": "1d67414380204cb4871b76414bf8347c78305a8e6066be52ede9a097d20663338e00a16568718c7065bd0cd4e93ff075ecda7c2421c5cd612d61eb6ede5355e6",
+          "sha256": "e0b95551c091ff11fcbf32e54543af93130acfc164e9c6d16f1c82f3999a9b22",
+          "sha1": "fba4441264118554fdb1aa8eac7146e580cff619",
+          "md5": "53b9e7e042f4e9f9e1dadce57255f31b"
+        }
+      ]
+    }
+  ]
+}

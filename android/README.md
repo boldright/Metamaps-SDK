@@ -64,9 +64,10 @@ them, declare it in your app's manifest; your app's own declarations always take
 
 GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input needs
 `RECORD_AUDIO`. Declare the ones you offer. When the user taps the location button or the microphone before your app
-holds the permission, the map view asks your app through `permissionRequestHandler`; answer with `request(activity)`
-to show the OS dialog, `finish()` after requesting the permissions yourself, or `decline()`. The SDK never shows the dialog on its
-own, and a denial arrives as an error whose `userAction` tells your app which guidance to show. The map hides its
+holds the permission, the map view shows the OS dialog from its Activity. To show your own explanation first, set
+`permissionRequestHandler`; the map view then asks your app, and you answer with `request(activity)` to show the OS
+dialog, `finish()` after requesting the permissions yourself, or `decline()`. A denial arrives as an error whose
+`userAction` tells your app which guidance to show. The map hides its
 microphone button only when `RECORD_AUDIO` is not declared or the device has no speech recognition service. The SDK
 adds a `<queries>` entry for the speech recognition service to the merged manifest.
 

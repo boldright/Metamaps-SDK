@@ -22,7 +22,7 @@ sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > v
 ```
 
 To get a specific version, check out its tag before publishing, for example
-`git -C ../Metamaps-SDK checkout v0.8.0`.
+`git -C ../Metamaps-SDK checkout v0.9.0`.
 
 Because the directory name is fixed and dependency versions are read from `VERSION`, an SDK update only replaces
 this directory; `settings.gradle.kts` and `build.gradle.kts` stay unchanged. Step 11 describes the update.
@@ -166,16 +166,19 @@ search field and AI chat needs `RECORD_AUDIO`. Declare the ones you offer in you
 <uses-permission android:name="android.permission.RECORD_AUDIO" />
 ```
 
-When the user taps the map's location button or microphone before your app holds the permission, the map view asks
-your app through `permissionRequestHandler`. The SDK never shows a permission dialog for these on its own. Answer
-each request once: `request(activity)` shows the OS permission dialog; after requesting `androidPermissions`
-yourself, call `finish()`; to leave the permission as it is, for example when the user turned down your own
-explanation, call `decline()`. The map waits until you answer, then reads the result from the OS. Without a handler,
-the map view denies these requests at once.
+When the user taps the map's location button or microphone before your app holds the permission, the map view shows
+the OS permission dialog from its Activity, as WebKit does on iOS, and the map waits for the user's answer. No code
+is needed for this. A map view that is not in an Activity cannot show the dialog and denies the request.
+
+To show your own explanation first, or to request the permissions yourself, set `permissionRequestHandler`. The map
+view then asks your app instead of showing the dialog. Answer each request once: `request(activity)` shows the OS
+permission dialog; after requesting `androidPermissions` yourself, call `finish()`; to leave the permission as it
+is, for example when the user turned down your own explanation, call `decline()`. The map waits until you answer,
+then reads the result from the OS.
 
 ```kotlin
 mapView.permissionRequestHandler = { request ->
-    // Show your own explanation first if your app needs one.
+    // Show your own explanation here, then let the SDK show the OS dialog.
     request.request(this)
 }
 ```
@@ -410,7 +413,7 @@ cp -R ../Metamaps-SDK/android/build/maven-repository vendor/metamaps-android/
 sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > vendor/metamaps-android/VERSION
 ```
 
-Replace `<version>` with the version to install, for example `0.8.0`.
+Replace `<version>` with the version to install, for example `0.9.0`.
 
 Build as usual after replacing the directory:
 
