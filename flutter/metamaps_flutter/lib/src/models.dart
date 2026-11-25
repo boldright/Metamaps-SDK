@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 /// The version of this plugin and the native Metamaps SDKs bundled with it. It is not the Flutter SDK version.
-const String metamapsSdkVersion = '0.9.0';
+const String metamapsSdkVersion = '1.0.0';
 
 /// The production origin for the map and the positioning manifest when no origin is specified.
 final Uri metamapsProductionBaseUrl = Uri(scheme: 'https', host: 'metamaps.jp');

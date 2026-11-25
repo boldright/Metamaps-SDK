@@ -139,7 +139,7 @@ class ContractsAndSurveyTests {
             rssiDbm = -59.0,
             windowStartMonotonicTimestampMs = 900,
             monotonicTimestampMs = 1_000,
-            source = "android_beacon_library",
+            source = "android_ble_scanner",
             duplicateCount = 1,
             rssiSigmaDb = null,
         )

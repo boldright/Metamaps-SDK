@@ -3,7 +3,7 @@
   "component": {
     "group": "jp.metamaps",
     "module": "metamaps-positioning",
-    "version": "0.9.0",
+    "version": "1.0.0",
     "attributes": {
       "org.gradle.status": "release"
     }
@@ -27,7 +27,7 @@
           "group": "jp.metamaps",
           "module": "metamaps-positioning-core",
           "version": {
-            "requires": "0.9.0"
+            "requires": "1.0.0"
           }
         },
         {
@@ -47,13 +47,13 @@
       ],
       "files": [
         {
-          "name": "metamaps-positioning-0.9.0.aar",
-          "url": "metamaps-positioning-0.9.0.aar",
-          "size": 192404,
-          "sha512": "193f05507850a88e00976447b42ddb6f34ef8bf5b9311d4bd6b4cc9c0dccae73c88411218a84da92a719d3ea9d690d333b5296692b1aad85b0b1645e35da9059",
-          "sha256": "7e0a10cccc0566b4077e61855b9a9d35f281b7b3c0513ec4b39599fa46e4d02b",
-          "sha1": "c0f6399709ff2faca97ffe6c9ebf9016dc331464",
-          "md5": "d55967464c7cc54337e7c0fec3b17828"
+          "name": "metamaps-positioning-1.0.0.aar",
+          "url": "metamaps-positioning-1.0.0.aar",
+          "size": 207954,
+          "sha512": "98c4900f0214124207f6dba44e533bf4eb5c3df062c4439361c25a8edd3a3d2edef137b6c4f3a4aa4b5ebad8044145be6bb0320e14eb5e49a451ecc240f00a2f",
+          "sha256": "a98eabdbf6f9cffffba718e186c1b39c7db9f32cdcebab8f270708d19c553216",
+          "sha1": "77149fd535f3e6ca1c67b827bb68ab67bddaf5c0",
+          "md5": "7333fdcc7bca1cc5d4f9ff0bbfa1d930"
         }
       ]
     },
@@ -67,17 +67,10 @@
       },
       "dependencies": [
         {
-          "group": "org.altbeacon",
-          "module": "android-beacon-library",
-          "version": {
-            "requires": "2.21.2"
-          }
-        },
-        {
           "group": "jp.metamaps",
           "module": "metamaps-positioning-core",
           "version": {
-            "requires": "0.9.0"
+            "requires": "1.0.0"
           }
         },
         {
@@ -97,13 +90,13 @@
       ],
       "files": [
         {
-          "name": "metamaps-positioning-0.9.0.aar",
-          "url": "metamaps-positioning-0.9.0.aar",
-          "size": 192404,
-          "sha512": "193f05507850a88e00976447b42ddb6f34ef8bf5b9311d4bd6b4cc9c0dccae73c88411218a84da92a719d3ea9d690d333b5296692b1aad85b0b1645e35da9059",
-          "sha256": "7e0a10cccc0566b4077e61855b9a9d35f281b7b3c0513ec4b39599fa46e4d02b",
-          "sha1": "c0f6399709ff2faca97ffe6c9ebf9016dc331464",
-          "md5": "d55967464c7cc54337e7c0fec3b17828"
+          "name": "metamaps-positioning-1.0.0.aar",
+          "url": "metamaps-positioning-1.0.0.aar",
+          "size": 207954,
+          "sha512": "98c4900f0214124207f6dba44e533bf4eb5c3df062c4439361c25a8edd3a3d2edef137b6c4f3a4aa4b5ebad8044145be6bb0320e14eb5e49a451ecc240f00a2f",
+          "sha256": "a98eabdbf6f9cffffba718e186c1b39c7db9f32cdcebab8f270708d19c553216",
+          "sha1": "77149fd535f3e6ca1c67b827bb68ab67bddaf5c0",
+          "md5": "7333fdcc7bca1cc5d4f9ff0bbfa1d930"
         }
       ]
     },
@@ -117,13 +110,13 @@
       },
       "files": [
         {
-          "name": "metamaps-positioning-0.9.0-sources.jar",
-          "url": "metamaps-positioning-0.9.0-sources.jar",
-          "size": 29566,
-          "sha512": "c0145e674675087aabfc18bf76a65a3e90a28f82ccf5f271cb1bcb4b489ae372b9dd7e4ba4635f9602c30dd0df403e754a86c09c6ee49cea7a76ddb944f2c1c4",
-          "sha256": "023f662188fde576ef31c8c9df370f3e0c70346f3e4f38811009c7dc84d27942",
-          "sha1": "684d53b77c1b83621f21709807ef10398e620618",
-          "md5": "1c35b01c00dba7212fcd0bdb94dc4beb"
+          "name": "metamaps-positioning-1.0.0-sources.jar",
+          "url": "metamaps-positioning-1.0.0-sources.jar",
+          "size": 32643,
+          "sha512": "17be6c1d4b53b6a1735f485a91d9719a524b6d31569ab308a5b3118f7339bbec985853e5eccbf60ef115438ee2afa3072e92160b1f0f9373e4a1d5db7ac64ead",
+          "sha256": "3d82de83b54d3c8f22d83fd16190ecbab2dab1d1b2fe8f1f957c217662d7250b",
+          "sha1": "b915e05c46991ee11f69c1cedbb0fa2655dfac4f",
+          "md5": "c96a34c22bbb480149c21efa91251d30"
         }
       ]
     }

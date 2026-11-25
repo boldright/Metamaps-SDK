@@ -3,7 +3,7 @@
   "component": {
     "group": "jp.metamaps",
     "module": "metamaps-mapview",
-    "version": "0.9.0",
+    "version": "1.0.0",
     "attributes": {
       "org.gradle.status": "release"
     }
@@ -27,7 +27,7 @@
           "group": "jp.metamaps",
           "module": "metamaps-positioning",
           "version": {
-            "requires": "0.9.0"
+            "requires": "1.0.0"
           }
         },
         {
@@ -40,13 +40,13 @@
       ],
       "files": [
         {
-          "name": "metamaps-mapview-0.9.0.aar",
-          "url": "metamaps-mapview-0.9.0.aar",
+          "name": "metamaps-mapview-1.0.0.aar",
+          "url": "metamaps-mapview-1.0.0.aar",
           "size": 196476,
-          "sha512": "394bb9931308173b75f54c87363ca71e4acd52ea36569bf761f9aaec44a519966e6fb0dd7a772e7f84a73bd53b55fa80250a24efdfeb87fb3793e99217a5dc92",
-          "sha256": "820181ae0a6fcbf01b75073550a8ba200883c5868c821301ed7b1aa9d8914ffa",
-          "sha1": "323b592db8fd1f542c7649ecce94495e318f9248",
-          "md5": "243f12cad5a5db72a9a9caad89180ba2"
+          "sha512": "0c6be52617bb7cd8293238ad13363c25b76d64335b288fd1dec25f4d4e9fcdba0e28138c4f2724d2a184faefe5a56f9e7e303827f22f7301434408f582c0d83b",
+          "sha256": "873d6ca94808bb65720899a63791fb512da47b5152f1d0247e28fa8cc46c2739",
+          "sha1": "fe727e5ac8633934d154985efd9619ae9f8e93d1",
+          "md5": "cbf186da9f9d06ba484d007262ea8603"
         }
       ]
     },
@@ -70,7 +70,7 @@
           "group": "jp.metamaps",
           "module": "metamaps-positioning",
           "version": {
-            "requires": "0.9.0"
+            "requires": "1.0.0"
           }
         },
         {
@@ -83,13 +83,13 @@
       ],
       "files": [
         {
-          "name": "metamaps-mapview-0.9.0.aar",
-          "url": "metamaps-mapview-0.9.0.aar",
+          "name": "metamaps-mapview-1.0.0.aar",
+          "url": "metamaps-mapview-1.0.0.aar",
           "size": 196476,
-          "sha512": "394bb9931308173b75f54c87363ca71e4acd52ea36569bf761f9aaec44a519966e6fb0dd7a772e7f84a73bd53b55fa80250a24efdfeb87fb3793e99217a5dc92",
-          "sha256": "820181ae0a6fcbf01b75073550a8ba200883c5868c821301ed7b1aa9d8914ffa",
-          "sha1": "323b592db8fd1f542c7649ecce94495e318f9248",
-          "md5": "243f12cad5a5db72a9a9caad89180ba2"
+          "sha512": "0c6be52617bb7cd8293238ad13363c25b76d64335b288fd1dec25f4d4e9fcdba0e28138c4f2724d2a184faefe5a56f9e7e303827f22f7301434408f582c0d83b",
+          "sha256": "873d6ca94808bb65720899a63791fb512da47b5152f1d0247e28fa8cc46c2739",
+          "sha1": "fe727e5ac8633934d154985efd9619ae9f8e93d1",
+          "md5": "cbf186da9f9d06ba484d007262ea8603"
         }
       ]
     },
@@ -103,8 +103,8 @@
       },
       "files": [
         {
-          "name": "metamaps-mapview-0.9.0-sources.jar",
-          "url": "metamaps-mapview-0.9.0-sources.jar",
+          "name": "metamaps-mapview-1.0.0-sources.jar",
+          "url": "metamaps-mapview-1.0.0-sources.jar",
           "size": 35051,
           "sha512": "1d67414380204cb4871b76414bf8347c78305a8e6066be52ede9a097d20663338e00a16568718c7065bd0cd4e93ff075ecda7c2421c5cd612d61eb6ede5355e6",
           "sha256": "e0b95551c091ff11fcbf32e54543af93130acfc164e9c6d16f1c82f3999a9b22",

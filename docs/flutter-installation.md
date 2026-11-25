@@ -18,7 +18,7 @@ mkdir -p vendor
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v0.9.0`.
+To get a specific version, check out its tag first, for example `git -C ../Metamaps-SDK checkout v1.0.0`.
 
 Because the directory name is fixed, an SDK update only replaces this directory; `pubspec.yaml` and
 `build.gradle.kts` stay unchanged. Step 11 describes the update.
@@ -161,10 +161,7 @@ When the widget is disposed, the plugin disposes the native map view and the Web
 ## 5. Permissions
 
 On Android, a map-only app needs no permission entries. The plugin adds only `INTERNET` to your merged manifest;
-it does not add location, Bluetooth, or activity recognition permissions. The SDK also removes
-`ACCESS_COARSE_LOCATION`, `BLUETOOTH`, and `BLUETOOTH_ADMIN`, which the Android Beacon Library it uses declares.
-The removal can also apply to the same permissions declared by other libraries in your app, so if another library
-needs any of them, declare it in your app's manifest; your app's own declarations always take priority.
+it does not add location, Bluetooth, or activity recognition permissions.
 
 On Android, GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input in
 the map's search field and AI chat needs `RECORD_AUDIO`. Declare the ones you offer in
@@ -401,7 +398,7 @@ rm -rf vendor/metamaps-flutter
 cp -R ../Metamaps-SDK/flutter/metamaps_flutter vendor/metamaps-flutter
 ```
 
-Replace `<version>` with the version to install, for example `0.9.0`.
+Replace `<version>` with the version to install, for example `1.0.0`.
 
 **Do not skip `rm -rf`.** If `vendor/metamaps-flutter` still exists, `cp -R` copies the new directory **into** it.
 Flutter then keeps reading the old `vendor/metamaps-flutter/pubspec.yaml`, `android/`, and `ios/`, and the build

@@ -53,14 +53,11 @@ dependencies {
 }
 ```
 
-Do not use `flatDir` or `files(...)` references to AARs; they do not resolve transitive dependencies. AndroidX,
-Kotlin coroutines, and the Android Beacon Library come from Google Maven and Maven Central; in a fully offline
-environment, mirror these third-party dependencies as well.
+Do not use `flatDir` or `files(...)` references to AARs; they do not resolve transitive dependencies. AndroidX and
+Kotlin coroutines come from Google Maven and Maven Central; in a fully offline environment, mirror these
+third-party dependencies as well.
 
-A map-only app needs no permission entries: the libraries add only `INTERNET` to the merged manifest. They also
-remove `ACCESS_COARSE_LOCATION`, `BLUETOOTH`, and `BLUETOOTH_ADMIN`, which the Android Beacon Library declares. The
-removal can also apply to the same permissions declared by other libraries, so if another library needs any of
-them, declare it in your app's manifest; your app's own declarations always take priority.
+A map-only app needs no permission entries: the libraries add only `INTERNET` to the merged manifest.
 
 GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input needs
 `RECORD_AUDIO`. Declare the ones you offer. When the user taps the location button or the microphone before your app
@@ -102,10 +99,6 @@ validates the document token, the bridge major version, the map and group, and a
 number. Long-lived tokens and secrets are never passed to JavaScript. The IDs passed to `showSpot()` and
 `setDestination()` are the stable keys of public spots, such as `6Y6SSBY5` (keys in the older `spot_` format are
 also accepted).
-
-For apps targeting API 33 or later, consumer lint can report `NotificationPermission` for the Android Beacon
-Library's optional `BluetoothMedic`. The SDK never calls that feature, so do not add `POST_NOTIFICATIONS`. The
-developer guide shows a `lint.xml` rule that ignores only this third-party class.
 
 ## Indoor positioning (optional)
 
@@ -157,10 +150,10 @@ lifecycleScope.launch {
 
 Depend on `jp.metamaps:metamaps-positioning:<version>` for this. The SDK validates the positioning data (the
 manifest) with its ETag and a SHA-256 digest of its RFC 8785 canonical JSON, and caches it atomically in the app
-sandbox. Without a network connection, it uses the last validated manifest for up to 7 days by default. The
-Android Beacon Library is used only to parse iBeacon packets and to manage the scan lifecycle; its distance
-estimator and long-window signal average are not used. Positions are computed on the device by the Metamaps
-positioning engine.
+sandbox. Without a network connection, it uses the last validated manifest for up to 7 days by default. The SDK
+scans with Android's `BluetoothLeScanner` and a filter that matches only the iBeacons of the map, so it does not
+process the advertisements of other nearby Bluetooth devices, and it restarts the scan every 4 minutes so that
+Android does not throttle it. Positions are computed on the device by the Metamaps positioning engine.
 
 To keep the time spent reading a description or walking to the start point out of the next segment, call
 `client.resetPedestrianRoute()` (`mapView.resetPedestrianRoute()` with the map view) right before the segment

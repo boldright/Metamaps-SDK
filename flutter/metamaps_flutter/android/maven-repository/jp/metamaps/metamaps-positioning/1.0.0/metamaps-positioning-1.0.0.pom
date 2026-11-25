@@ -8,11 +8,11 @@
   <!-- do_not_remove: published-with-gradle-metadata -->
   <modelVersion>4.0.0</modelVersion>
   <groupId>jp.metamaps</groupId>
-  <artifactId>metamaps-mapview</artifactId>
-  <version>0.9.0</version>
+  <artifactId>metamaps-positioning</artifactId>
+  <version>1.0.0</version>
   <packaging>aar</packaging>
-  <name>Metamaps MapView for Android</name>
-  <description>Embeds maps built with Metamaps in Android apps, with optional indoor positioning.</description>
+  <name>Metamaps Positioning for Android</name>
+  <description>Optional indoor positioning for the Metamaps SDK, also usable without the map view.</description>
   <url>https://metamaps.jp</url>
   <licenses>
     <license>
@@ -23,8 +23,14 @@
   <dependencies>
     <dependency>
       <groupId>jp.metamaps</groupId>
-      <artifactId>metamaps-positioning</artifactId>
-      <version>0.9.0</version>
+      <artifactId>metamaps-positioning-core</artifactId>
+      <version>1.0.0</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jetbrains.kotlinx</groupId>
+      <artifactId>kotlinx-coroutines-android</artifactId>
+      <version>1.11.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -32,12 +38,6 @@
       <artifactId>kotlin-stdlib</artifactId>
       <version>2.4.20</version>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>androidx.browser</groupId>
-      <artifactId>browser</artifactId>
-      <version>1.10.0</version>
-      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

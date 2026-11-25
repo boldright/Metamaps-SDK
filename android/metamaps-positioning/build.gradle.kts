@@ -60,7 +60,6 @@ dependencies {
     // Public APIs expose Flow/coroutines and MapView uses Dispatchers.Main at runtime.
     // Publish the Android dispatcher transitively so a host app does not need to guess this dependency.
     api("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
-    implementation("org.altbeacon:android-beacon-library:2.21.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:2.4.20")
 }
 

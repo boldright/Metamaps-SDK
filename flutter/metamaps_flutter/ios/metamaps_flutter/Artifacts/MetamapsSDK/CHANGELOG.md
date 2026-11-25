@@ -1,5 +1,44 @@
 # Changelog
 
+## 1.0.0
+
+This is the first stable version. From now on, a breaking change raises the major version. On Android, indoor
+positioning no longer uses the Android Beacon Library: it scans only for the map's iBeacons and keeps working while
+the map stays open.
+
+### Breaking changes
+
+- Android: `metamaps-positioning` no longer depends on the Android Beacon Library
+  (`org.altbeacon:android-beacon-library`). If your app uses that library directly, add it to your own dependencies.
+- Android: The library manifest no longer removes `ACCESS_COARSE_LOCATION`, `BLUETOOTH`, `BLUETOOTH_ADMIN`,
+  `FOREGROUND_SERVICE_LOCATION`, and `RECEIVE_BOOT_COMPLETED` from your merged manifest. These removals were there
+  for the Android Beacon Library, but they also removed the same permissions declared by other libraries in your
+  app. Those permissions now appear in your merged manifest as the other libraries declare them. The permissions
+  your app declares itself are unchanged, and the libraries still add only `INTERNET`.
+
+### Changes
+
+- Android: Indoor positioning scans with Android's `BluetoothLeScanner` and a scan filter that matches only the
+  iBeacons in the map's positioning data. Your app no longer receives and parses the advertisements of the other
+  Bluetooth devices around it, which lowers CPU use where many Bluetooth devices are nearby.
+- Android: The scan restarts every 4 minutes. Android moves a scan that runs longer than the Bluetooth stack's scan
+  timeout (5 minutes on some devices) to a mode in which beacons barely arrive, so the map lost the current location
+  after a few minutes. The scan also restarts when Bluetooth is turned back on.
+- Android: An asynchronous scan failure (`scanRuntimeFailed`) carries Android's error code in `debugDetail`.
+- Android: The `lint.xml` rule that ignored `NotificationPermission` for `org.altbeacon.bluetooth.BluetoothMedic` is
+  no longer needed. The Android developer guide no longer has the Android Lint step.
+
+### Changes in the hosted map
+
+These apply to every SDK version, including 0.9.0, because the map is served by Metamaps:
+
+- Denying physical activity (Android) or Motion & Fitness (iOS) permission no longer stops indoor positioning. The
+  map keeps positioning with beacons and only stops counting steps. It used to switch to GPS and stop the beacon scan.
+- When the user taps the location button before the permissions are decided, the time spent answering the OS
+  permission dialogs no longer counts toward the 8 seconds the map waits for the first beacon location. Taking a
+  few seconds to answer used to switch the map to GPS even after the user allowed everything. The map waits up to
+  2 minutes for the answers.
+
 ## 0.9.0
 
 On Android, GPS location and voice input in the map now work without permission code in your app, as on iOS.

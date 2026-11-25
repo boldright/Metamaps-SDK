@@ -1,7 +1,7 @@
 # Metamaps Android SDK Developer Guide
 
 This guide adds the Metamaps map view to an Android app from a local Maven repository, configures it, and shows the
-basic calls an app makes. Indoor positioning is optional; step 9 covers it. The SDK requires minSdk 24, compileSdk
+basic calls an app makes. Indoor positioning is optional; step 8 covers it. The SDK requires minSdk 24, compileSdk
 36 or later, and JDK 17. The SDK is built and tested with Gradle 9.8.0, Android Gradle Plugin 9.4.1, and Kotlin
 2.4.20.
 
@@ -22,10 +22,10 @@ sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > v
 ```
 
 To get a specific version, check out its tag before publishing, for example
-`git -C ../Metamaps-SDK checkout v0.9.0`.
+`git -C ../Metamaps-SDK checkout v1.0.0`.
 
 Because the directory name is fixed and dependency versions are read from `VERSION`, an SDK update only replaces
-this directory; `settings.gradle.kts` and `build.gradle.kts` stay unchanged. Step 11 describes the update.
+this directory; `settings.gradle.kts` and `build.gradle.kts` stay unchanged. Step 10 describes the update.
 
 ## 2. Configure Kotlin, repositories, and dependencies
 
@@ -154,7 +154,7 @@ placeholder that only lets the app build; replace it with the slug you were give
 ## 4. Permissions
 
 A map-only app needs no permission entries. The SDK adds only `INTERNET` to your merged manifest; it does not
-add location, Bluetooth, or activity recognition permissions. Step 9 lists the permissions that indoor
+add location, Bluetooth, or activity recognition permissions. Step 8 lists the permissions that indoor
 positioning needs.
 
 GPS location in the map needs `ACCESS_FINE_LOCATION` and `ACCESS_COARSE_LOCATION`, and voice input in the map's
@@ -206,11 +206,6 @@ does, because the map's labels and panels have fixed sizes.
 On Android 11 and later, the map's safe area gets only the system bars and display cutout that overlap the map view.
 Pad the map's parent, consume the insets, or draw the map edge to edge; the map keeps its controls clear of the
 system bars without adding the space twice.
-
-The SDK also removes `ACCESS_COARSE_LOCATION`, `BLUETOOTH`, and `BLUETOOTH_ADMIN`, which the Android Beacon
-Library it uses declares. The removal can also apply to the same permissions declared by other libraries in your
-app, so if another library needs any of them, declare it in your app's manifest; your app's own declarations always
-take priority.
 
 Android Studio's Quick Documentation shows the public API documentation from the bundled sources JARs.
 
@@ -298,25 +293,7 @@ val configuration = MetamapsMapViewConfiguration(
 )
 ```
 
-## 8. Android Lint
-
-The transitive Android Beacon Library contains the optional `BluetoothMedic` feature, so Lint may report
-`NotificationPermission` for apps targeting API 33 or later. The SDK never calls that feature and never posts
-notifications. Do not add `POST_NOTIFICATIONS`; instead, ignore only this caller in the app module's `lint.xml`:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<lint>
-    <issue id="NotificationPermission">
-        <ignore regexp="usage from org\.altbeacon\.bluetooth\.BluetoothMedic" />
-    </issue>
-</lint>
-```
-
-`NotificationPermission` findings for notifications your own app posts do not match this pattern and are still
-reported.
-
-## 9. Indoor positioning (optional)
+## 8. Indoor positioning (optional)
 
 Indoor positioning shows the user's current location on maps whose facility has installed beacons and enabled
 positioning in Metamaps. For other maps, the map view requests no permissions and downloads no positioning data,
@@ -387,7 +364,7 @@ control of when and how permissions are requested even when automatic start is e
 To show positioning with your own map instead of the map view, depend on
 `jp.metamaps:metamaps-positioning` and use `MetamapsPositioningClient`.
 
-## 10. Build
+## 9. Build
 
 Open the app in Android Studio and choose `Build > Make Project` or `Run`. From a terminal, run:
 
@@ -397,7 +374,7 @@ Open the app in Android Studio and choose `Build > Make Project` or `Run`. From 
 
 The APK is usually written to `app/build/outputs/apk/debug/app-debug.apk`.
 
-## 11. Update the SDK
+## 10. Update the SDK
 
 Check out the new version in your clone of the public repository, publish it, and replace the whole
 `vendor/metamaps-android/` directory. Do not change `settings.gradle.kts`, `build.gradle.kts`, `lint.xml`,
@@ -413,7 +390,7 @@ cp -R ../Metamaps-SDK/android/build/maven-repository vendor/metamaps-android/
 sed -n 's/^version = "\(.*\)"/\1/p' ../Metamaps-SDK/android/build.gradle.kts > vendor/metamaps-android/VERSION
 ```
 
-Replace `<version>` with the version to install, for example `0.9.0`.
+Replace `<version>` with the version to install, for example `1.0.0`.
 
 Build as usual after replacing the directory:
 

@@ -49,7 +49,7 @@ class MetamapsPositioningClient(
     private val application = appContext as? Application
         ?: throw MetamapsError.invalidConfiguration("applicationContext is not an Application")
     private val repository = ManifestRepository(appContext.cacheDir.resolve("metamaps-positioning"))
-    private val beaconAdapter: BeaconRangingAdapter = AltBeaconRangingAdapter(appContext)
+    private val beaconAdapter: BeaconRangingAdapter = IBeaconScanAdapter(appContext)
     private val motionAdapter: MotionObservationAdapter = AndroidSensorAdapter(appContext)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val estimatorMutex = Mutex()

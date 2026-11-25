@@ -26,10 +26,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    lint {
-        // AltBeacon's optional BluetoothMedic posts notifications, but Metamaps never invokes it.
-        disable += "NotificationPermission"
-    }
 }
 
 kotlin {

@@ -66,7 +66,7 @@ data class MetamapsError(
 
 /** Version and endpoint information of the bundled Android SDK. */
 object MetamapsSdk {
-    const val VERSION = "0.9.0"
+    const val VERSION = "1.0.0"
 
     /** The production origin for the map and the positioning manifest when no origin is specified. */
     val PRODUCTION_BASE_URL: URI = URI.create("https://metamaps.jp")
